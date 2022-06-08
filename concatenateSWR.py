@@ -4,18 +4,15 @@ import glob
 import os
 import pprint
 import re
-import wave
 import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import loadmat
-from scikits.audiolab import Sndfile, Format
-from subprocess import call
+
+# wav file handling
+import scipy.io.wavfile as sio_wavfile
 
 pp = pprint.PrettyPrinter(indent=4)
-
-    
 
 def write_fav_input(table, filename):
     # Finally dump all the metadata into a csv-formated file to
@@ -95,18 +92,18 @@ def concatenateWavs(dirname, outfilename, speaker_id):
     format = Format()
     
     # find params from first file
-    with closing(Sndfile(wav_files[0], 'r')) as w:
+    with closing(sio_wavfile(wav_files[0], 'r')) as w:
         fs = w.samplerate
         channels = w.channels
         format = w.format
 
-    with closing(Sndfile(outwave, 'w', format, channels, fs)) as output:
+    with closing(sio_wavfile(outwave, 'w', format, channels, fs)) as output:
         for (i, infile) in enumerate(wav_files):
             if filenames[i] in na_list:
-                print 'Skipping', filenames[i], ': Token is in na_list.txt.'
+                print('Skipping {filename}: Token is in na_list.txt.' filename=filenames[i])
                 continue
             elif not os.path.isfile(uti_files[i]):
-                print 'Skipping ', filenames[i], '. Token has no ultrasound data.'
+                print ('Skipping {filename}. Token has no ultrasound data.', filename=filenames[i])
                 continue
                 
             with closing(open(prompt_files[i], 'r')) as prompt_file:
@@ -150,14 +147,14 @@ def concatenateWavs(dirname, outfilename, speaker_id):
 
 def main(args):
     outfilename = args.pop()
-    dirname = args.pop()
+    original_dirname = args.pop()
     speaker_id = args.pop()
-    concatenateWavs(dirname, outfilename, speaker_id)
+    concatenateWavs(speaker_id, original_dirname, outfilename)
 
 
 if (len(sys.argv) != 4):
     print("\nex1_concat.py")
-    print("\tusage: ex1_concat.py speaker_id directory outputfilename")
+    print("\tusage: ex1_concat.py speaker_id original_directory outputfilename")
     print("\n\tConcatenates wav files from AAA.")
     print("\tWrites a huge wav-file and a .txt for potential input to FAVE.")
     print("\tAlso writes a richer metafile to be read by ex1_extract.py or similar.")
@@ -167,6 +164,6 @@ if (len(sys.argv) != 4):
 if (__name__ == '__main__'):
     t = time.time()
     main(sys.argv[1:])
-    print 'Elapsed time', (time.time() - t)
+    print('Elapsed time {elapsed_time}', elapsed_time = (time.time() - t))
 
 
