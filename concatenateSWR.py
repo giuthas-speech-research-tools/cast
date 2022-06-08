@@ -6,11 +6,14 @@ import pprint
 import re
 import sys
 import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 # wav file handling
 import scipy.io.wavfile as sio_wavfile
+
+import textgrids
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -42,6 +45,12 @@ def write_results(table, filename):
     print("Wrote file " + filename + " for R/Python.")
 
 
+def write_concatenated_textgrid(table, filename):
+    print(table)
+    print(filename)
+    print("textgrids does not yet support all the operations we need. work on that.")
+
+
 def concatenateWavs(dirname, outfilename, speaker_id):
     wav_files = glob.glob(os.path.join(dirname, '*.wav')) 
     prompt_files = glob.glob(os.path.join(dirname, '*.txt')) 
@@ -60,6 +69,7 @@ def concatenateWavs(dirname, outfilename, speaker_id):
     outwave = outfilename + ".wav"
     outfav = outfilename + ".txt"
     outcsv = outfilename + ".csv"
+    out_textgrid = outfilename + ".TextGrid"
 
     # initialise table with the speaker_id and name repeated and other fields empty
     table = [{'id':'n/a', 
@@ -85,63 +95,69 @@ def concatenateWavs(dirname, outfilename, speaker_id):
     
     uti_files = [os.path.join(dirname, filename) + '.ult' 
                  for filename in filenames]
-
-    cursor = 0.0
-    fs = 0
-    channels = 0
-    format = Format()
     
     # find params from first file
-    with closing(sio_wavfile(wav_files[0], 'r')) as w:
-        fs = w.samplerate
-        channels = w.channels
-        format = w.format
+    (samplerate, test_data) = sio_wavfile.read(wav_files[0])
+    number_of_channels = test_data.shape[1]
 
-    with closing(sio_wavfile(outwave, 'w', format, channels, fs)) as output:
+    with closing(outwave, 'w') as output:
         for (i, infile) in enumerate(wav_files):
             if filenames[i] in na_list:
-                print('Skipping {filename}: Token is in na_list.txt.' filename=filenames[i])
+                print('Skipping {filename}: Token is in na_list.txt.', filename=filenames[i])
                 continue
             elif not os.path.isfile(uti_files[i]):
-                print ('Skipping {filename}. Token has no ultrasound data.', filename=filenames[i])
+                print ('Skipping {filename}. Token has no ultrasound data.', 
+                    filename=filenames[i])
                 continue
                 
             with closing(open(prompt_files[i], 'r')) as prompt_file:
                 line = prompt_file.readline().strip()
                 line = " ".join(re.findall("[a-zA-Z]+", line))
                 if line == 'water swallow' or line == 'BITE PLANE':
-                    print 'Skipping', prompt_files[i], line
+                    print('Skipping {file} is a {prompt}', file=prompt_files[i], prompt=line)
                     continue
 
                 table[i]['word'] = line
 
-            with closing(Sndfile(infile, 'r')) as w:
-                n_frames = w.nframes
-                if fs != w.samplerate:
-                    print 'Mismatched sample rates in sound files.'
-                    print 'Exiting.'
-                    exit()
+            (next_samplerate, frames) = sio_wavfile.read(infile)
+            n_frames = frames.shape[0]
+            n_channels = frames.shape[1]
 
-                duration = n_frames / float(fs)
-                frames = w.read_frames(n_frames)
-            
-                # this rather than full path to avoid upsetting praat/FAV
-                table[i]['id'] = filenames[i]
+            if next_samplerate != samplerate:
+                print('Mismatched sample rates in sound files.')
+                print("{next_samplerate} in {infile} is not the common one: {samplerate}", 
+                    next_samplerate=next_samplerate, infile=infile, samplerate=samplerate)
+                print('Exiting.')
+                exit()
 
-                table[i]['sliceBegin'] = cursor
+            if n_channels != number_of_channels:
+                print('Mismatched numbers of channels in sound files.')
+                print("{n_channels} in {infile} is not the common one: {number_of_channels}", 
+                    n_channels=n_channels, infile=infile, number_of_channels=number_of_channels)
+                print('Exiting.')
+                exit()
 
-                # give fav the stuff from 1.5s after the audio recording begins
-                table[i]['begin'] = cursor + 1.5 
+            duration = n_frames / float(samplerate)
+        
+            # this rather than full path to avoid upsetting praat/FAV
+            table[i]['id'] = filenames[i]
 
-                cursor += duration
-                table[i]['end'] = round(cursor, 3)
+            table[i]['sliceBegin'] = cursor
 
-                output.write_frames(frames)
+            # give fav the stuff from 1.5s after the audio recording begins
+            table[i]['begin'] = cursor + 1.5 
+
+            cursor += duration
+            table[i]['end'] = round(cursor, 3)
+
+            sio_wavfile.write(output, samplerate, frames)
+
 
     # Weed out the skipped ones before writing the data out.
     table = [token for token in table if token['id'] != 'n/a']
     write_fav_input(table, outfav)
     write_results(table, outcsv)
+    write_concatenated_textgrid(table, out_textgrid)
     #pp.pprint(table)
 
 
