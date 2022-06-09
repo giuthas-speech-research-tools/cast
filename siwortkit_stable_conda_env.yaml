@@ -11,7 +11,7 @@ dependencies:
   - pip 
   # textgrids is instead installed in devel mode with 
   # pip -e .
-  # in the source directory (~/tyot/source/textgrids for me)
+  # in the source directory (~/tyot/source/textgrids for me) to use in development mode.
   # - pip:
   #   - praat-textgrids >= 1.3
 
