@@ -74,6 +74,10 @@ def write_concatenated_textgrid(table, filename, dirname):
     pronunciation_dict = read_pronunciation_dict(os.path.join(dirname, 
                                                 'pronunciation_dict.csv'))
 
+    for entry in table:
+        print("Processing {word} which is pronounced {transcription}.", 
+            word = entry['word'], transcription = pronunciation_dict[entry['word']])
+
 def read_na_list(dirname):
     """
     Read the exclusion list from na_list.txt.
