@@ -78,6 +78,15 @@ def write_concatenated_textgrid(table, filename, dirname):
         print("Processing {word} which is pronounced {transcription}.", 
             word = entry['word'], transcription = pronunciation_dict[entry['word']])
 
+        # Add transcription info to the table entry
+        # Run beep detect on the wav.
+        # Add timing info to the table entry.
+
+    # Possibly after transforming the table into another list of dicts
+    # write the timing segmentation info into a .csv file or buffer.
+    # Construct a textgrid from the .csv and write it out
+
+
 def read_na_list(dirname):
     """
     Read the exclusion list from na_list.txt.
