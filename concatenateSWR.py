@@ -73,14 +73,17 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
         print("Processing {word} which is pronounced {transcription}.", 
             word = entry['word'], transcription = pronunciation_dict[entry['word']])
 
+        # TODO: this needs to be done earlier to provide it to FAV input as well
         # Run beep detect on the wav.
 
         # Add transcription info to the table entry
         # Add timing info to the table entry.
 
-    # Possibly after transforming the table into another list of dicts
+    # After transforming the table into another list of dicts
     # write the timing segmentation info into a .csv file or buffer.
-    # Construct a textgrid from the .csv and write it out
+    # Construct a 'Segment' Tier from the .csv and write it out
+    # Copy the 'Segment' as 'Phonetic detail' or some such as well.
+    # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
 
 
 def read_na_list(dirname):
@@ -145,6 +148,7 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
 
     table_entry['sliceBegin'] = cursor
 
+    # TODO: use beep detection instead
     # give fav the stuff from 1.5s after the audio recording begins
     table_entry['begin'] = cursor + 1.5 
 
@@ -206,6 +210,7 @@ def concatenateWavs(speaker_id, dirname, pronunciation_dict_name, outfilename):
         number_of_channels = test_data.shape[1]
 
     # Read wavs and keep track of file boundaries.
+    # TODO: consider moving the whole loop into processWavFile and renaming the function
     cursor = 0.0
     frames = None
     for i in range(len(wav_files)):
