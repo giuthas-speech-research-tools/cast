@@ -8,7 +8,6 @@ import sys
 import time
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 # wav file handling
 import scipy.io.wavfile as sio_wavfile
