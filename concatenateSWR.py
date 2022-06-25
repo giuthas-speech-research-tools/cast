@@ -14,6 +14,8 @@ import scipy.io.wavfile as sio_wavfile
 
 import textgrids
 
+import audio_processing
+
 pp = pprint.PrettyPrinter(indent=4)
 
 def write_fav_input(table, filename):
@@ -57,33 +59,52 @@ def read_pronunciation_dict(filename):
     pronunciation_dict = {}
     if os.path.isfile(filename):
         with closing(open(filename, 'r')) as csvfile:
-            reader = csv.reader(csvfile, delimiter='\t')
+            reader = csv.reader(csvfile, delimiter=',')
             pronunciation_dict = {row[0]: list(filter(None, row[1:])) for row in reader}
         return pronunciation_dict
     else:
-        print("Didn't find {pronunciation_dict}. Exiting.")
+        print("Didn't find {pronunciation_dict}. Exiting.", pronunciation_dict)
         sys.exit()
 
 
 def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
     pronunciation_dict = read_pronunciation_dict(pronunciation_dict_name)
 
-    transcription_table = {}
     for entry in table:
-        print("Processing {word} which is pronounced {transcription}.", 
-            word = entry['word'], transcription = pronunciation_dict[entry['word']])
+        try:
+            transcription = pronunciation_dict[entry['word']]
+            print("Processing {word} which is pronounced {transcription}.".format(
+                word = entry['word'], transcription = transcription))
+            entry['transcription'] = transcription
 
-        # TODO: this needs to be done earlier to provide it to FAV input as well
-        # Run beep detect on the wav.
+            # Generate an evenly spaced first guess of segmentation by taking the 
+            # middle third of the potential speech interval and chopping it up. 
+            earliest_speech = entry['begin'] +.058
+            seg_begin = earliest_speech + (entry['end'] - earliest_speech)/3
+            seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
+            boundaries = np.linspace(seg_begin, seg_end, len(transcription) + 3)
+            boundaries = boundaries[1:-1]
+            entry['segment boundaries'] = boundaries
+            print(boundaries)
+            print("slice: {begin} speech_end: {end}".format(
+                begin = entry['sliceBegin'], end = entry['end']))
 
-        # Add transcription info to the table entry
-        # Add timing info to the table entry.
+            # TODO: something in the above boundary generation goes badly wrong.
 
-    # After transforming the table into another list of dicts
-    # write the timing segmentation info into a .csv file or buffer.
-    # Construct a 'Segment' Tier from the .csv and write it out
-    # Copy the 'Segment' as 'Phonetic detail' or some such as well.
-    # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
+        except KeyError:
+            print("Word \'{word}\' missing from pronunciation dict.".format(word = entry['word']))
+
+
+    word_table = []
+    segment_table = []
+    for entry in table:
+        pass
+
+        # After transforming the table into another list of dicts
+        # write the timing segmentation info into a .csv file or buffer.
+        # Construct a 'Segment' Tier from the .csv and write it out
+        # Copy the 'Segment' as 'Phonetic detail' or some such as well.
+        # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
 
 
 def read_na_list(dirname):
@@ -103,7 +124,7 @@ def read_na_list(dirname):
 
 
 def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file, 
-                    na_list, samplerate, number_of_channels, cursor):
+                    na_list, samplerate, number_of_channels, cursor, filter):
     if filename in na_list:
         print('Skipping {filename}: Token is in na_list.txt.'.format(filename=filename))
         return cursor, None
@@ -148,10 +169,15 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
 
     table_entry['sliceBegin'] = cursor
 
-    # TODO: use beep detection instead
-    # give fav the stuff from 1.5s after the audio recording begins
-    table_entry['begin'] = cursor + 1.5 
+    # setup the high-pass filter for removing the mains frequency (and anything below it)
+    # from the recorded sound.
+    beep, has_speech = audio_processing.detect_beep_and_speech(
+        frames, samplerate,filter['b'], filter['a'], filename)
+    table_entry['beep'] = beep
+    table_entry['has speech'] = has_speech
 
+    # Give FAV only the audio after the beep.
+    table_entry['begin'] = beep + 0.05
     cursor += duration
     table_entry['end'] = round(cursor, 3)
 
@@ -211,12 +237,15 @@ def concatenateWavs(speaker_id, dirname, pronunciation_dict_name, outfilename):
 
     # Read wavs and keep track of file boundaries.
     # TODO: consider moving the whole loop into processWavFile and renaming the function
+    mainsFrequency = 60
+    filter = audio_processing.high_pass(samplerate, mainsFrequency)
     cursor = 0.0
     frames = None
     for i in range(len(wav_files)):
+        print(wav_files[i])
         cursor, new_frames = processWavFile(table[i], wav_files[i], filenames[i], 
                 prompt_files[i], uti_files[i], 
-                na_list, samplerate, number_of_channels, cursor)
+                na_list, samplerate, number_of_channels, cursor, filter)
         if new_frames is None:
             continue
         if frames is None:
@@ -244,7 +273,7 @@ def main(args):
     concatenateWavs(speaker_id, original_dirname, pronunciation_dict_name, outfilename)
 
 
-if (len(sys.argv) != 4):
+if (len(sys.argv) != 5):
     print("\nex1_concat.py")
     print("\tusage: ex1_concat.py speaker_id original_directory pronunciation_dict_name outputfilename")
     print("\n\tConcatenates wav files from AAA.")
@@ -257,6 +286,6 @@ if (len(sys.argv) != 4):
 if (__name__ == '__main__'):
     t = time.time()
     main(sys.argv[1:])
-    print('Elapsed time {elapsed_time}', elapsed_time = (time.time() - t))
+    print('Elapsed time {elapsed_time}'.format(elapsed_time = (time.time() - t)))
 
 
