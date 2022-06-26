@@ -83,9 +83,9 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
             seg_begin = earliest_speech + (entry['end'] - earliest_speech)/3
             seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
             boundaries = np.linspace(seg_begin, seg_end, len(transcription) + 3)
+            print(boundaries)
             boundaries = boundaries[1:-1]
             entry['segment boundaries'] = boundaries
-            print(boundaries)
             print("slice: {begin} speech_end: {end}".format(
                 begin = entry['sliceBegin'], end = entry['end']))
 
@@ -95,6 +95,7 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
             print("Word \'{word}\' missing from pronunciation dict.".format(word = entry['word']))
 
 
+    textgrid = textgrids.TextGrid()
     word_table = []
     segment_table = []
     for entry in table:
@@ -105,7 +106,7 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
         # Construct a 'Segment' Tier from the .csv and write it out
         # Copy the 'Segment' as 'Phonetic detail' or some such as well.
         # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
-
+    textgrid.write(filename)
 
 def read_na_list(dirname):
     """
@@ -176,8 +177,8 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
     table_entry['beep'] = beep
     table_entry['has speech'] = has_speech
 
-    # Give FAV only the audio after the beep.
-    table_entry['begin'] = beep + 0.05
+    # Start segmentation in FAV and other systems after the beep.
+    table_entry['begin'] = cursor + beep + 0.05
     cursor += duration
     table_entry['end'] = round(cursor, 3)
 
@@ -186,6 +187,7 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
 
 def concatenateWavs(speaker_id, dirname, pronunciation_dict_name, outfilename):
     wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav'))) 
+    wav_files = wav_files[:10]
 
     if(len(wav_files) < 1):
         print("Didn't find any sound files to concatanate in \'{dirname}\'.".format(dirname))
