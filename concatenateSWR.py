@@ -96,16 +96,11 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
             # Generate an evenly spaced first guess of segmentation by taking the 
             # middle third of the potential speech interval and chopping it up. 
             earliest_speech = entry['begin'] +.058
-            seg_begin = earliest_speech + (entry['end'] - earliest_speech)/3
+            seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
             seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
             boundaries = np.linspace(seg_begin, seg_end, len(transcription) + 3)
-            print(boundaries)
             boundaries = boundaries[1:-1]
             entry['segment boundaries'] = boundaries
-            print("slice: {begin} speech_end: {end}".format(
-                begin = entry['sliceBegin'], end = entry['end']))
-
-            # TODO: something in the above boundary generation goes badly wrong.
 
         except KeyError:
             print("Word \'{word}\' missing from pronunciation dict.".format(word = entry['word']))
@@ -133,10 +128,6 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
         words.append(word)
         words.append(end_buffer)
 
-        print(begin_buffer)
-        print(word)
-        print(end_buffer)
-
         # After transforming the table into another list of dicts
         # write the timing segmentation info into a .csv file or buffer.
         # Construct a 'Segment' Tier from the .csv and write it out
@@ -145,7 +136,6 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
     textgrid.interval_tier_from_array("Utterance", words)
     textgrid.interval_tier_from_array("Word", words)
     textgrid.write(filename)
-    print(filename)
 
 
 def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file, 
