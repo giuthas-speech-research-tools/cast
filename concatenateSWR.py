@@ -67,6 +67,22 @@ def read_pronunciation_dict(filename):
         sys.exit()
 
 
+def read_na_list(dirname):
+    """
+    Read the exclusion list from na_list.txt.
+    
+    If no exclusioin list file is present, return an empty array
+    after warning the user.
+    """
+    na_file = os.path.join(dirname, 'na_list.txt')
+    if os.path.isfile(na_file):
+        na_list = [line.rstrip('\n') for line in open(na_file)]
+    else:
+        na_list = []
+        print("Didn't find na_list.txt. Proceeding anyhow.")
+    return na_list
+
+
 def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
     pronunciation_dict = read_pronunciation_dict(pronunciation_dict_name)
 
@@ -96,32 +112,40 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
 
 
     textgrid = textgrids.TextGrid()
-    word_table = []
-    segment_table = []
+    words = []
+    segments = []
     for entry in table:
-        pass
+        begin_buffer = {
+            'label': '', 
+            'begin': entry['sliceBegin'], 
+            'end': entry['segment boundaries'][0]
+            }
+        word = {
+            'label': entry['word'], 
+            'begin': entry['segment boundaries'][0], 
+            'end': entry['segment boundaries'][-1]
+            }
+        end_buffer = {
+            'label': '', 
+            'begin': entry['segment boundaries'][-1], 
+            'end': entry['sliceEnd']}
+        words.append(begin_buffer)
+        words.append(word)
+        words.append(end_buffer)
+
+        print(begin_buffer)
+        print(word)
+        print(end_buffer)
 
         # After transforming the table into another list of dicts
         # write the timing segmentation info into a .csv file or buffer.
         # Construct a 'Segment' Tier from the .csv and write it out
         # Copy the 'Segment' as 'Phonetic detail' or some such as well.
         # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
+    textgrid.interval_tier_from_array("Utterance", words)
+    textgrid.interval_tier_from_array("Word", words)
     textgrid.write(filename)
-
-def read_na_list(dirname):
-    """
-    Read the exclusion list from na_list.txt.
-    
-    If no exclusioin list file is present, return an empty array
-    after warning the user.
-    """
-    na_file = os.path.join(dirname, 'na_list.txt')
-    if os.path.isfile(na_file):
-        na_list = [line.rstrip('\n') for line in open(na_file)]
-    else:
-        na_list = []
-        print("Didn't find na_list.txt. Proceeding anyhow.")
-    return na_list
+    print(filename)
 
 
 def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file, 
@@ -181,6 +205,7 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
     table_entry['begin'] = cursor + beep + 0.05
     cursor += duration
     table_entry['end'] = round(cursor, 3)
+    table_entry['sliceEnd'] = cursor
 
     return cursor, frames
 
