@@ -105,28 +105,66 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
         except KeyError:
             print("Word \'{word}\' missing from pronunciation dict.".format(word = entry['word']))
 
-
     textgrid = textgrids.TextGrid()
     words = []
     segments = []
     for entry in table:
-        begin_buffer = {
-            'label': '', 
-            'begin': entry['sliceBegin'], 
-            'end': entry['segment boundaries'][0]
-            }
+        if 'beep' in entry:
+            begin_buffer = {
+                'label': '', 
+                'begin': entry['sliceBegin'], 
+                'end': entry['beep']
+                }
+            words.append(begin_buffer)
+            segments.append(begin_buffer)
+
+            beep = {
+                'label': '', 
+                'begin': entry['beep'], 
+                'end': entry['beep'] + 0.05
+                }
+            words.append(beep)
+            segments.append(beep)
+
+            after_beep = {
+                'label': '', 
+                'begin': entry['beep'] + 0.05, 
+                'end': entry['segment boundaries'][0]
+                }
+            words.append(after_beep)          
+            segments.append(after_beep)          
+        else:
+            begin_buffer = {
+                'label': '', 
+                'begin': entry['sliceBegin'], 
+                'end': entry['segment boundaries'][0]
+                }
+            words.append(begin_buffer)
+            segments.append(begin_buffer)
+
+        # For words and utterances one long interval.
         word = {
             'label': entry['word'], 
             'begin': entry['segment boundaries'][0], 
             'end': entry['segment boundaries'][-1]
             }
+        words.append(word)
+
+        # For segmentation a bunch of segment intervals
+        for i, label in enumerate(entry['transcription']):
+            segment = {
+                'label': label,
+                'begin': entry['segment boundaries'][i],
+                'end': entry['segment boundaries'][i+1]
+            }
+            segments.append(segment)
+
         end_buffer = {
             'label': '', 
             'begin': entry['segment boundaries'][-1], 
             'end': entry['sliceEnd']}
-        words.append(begin_buffer)
-        words.append(word)
         words.append(end_buffer)
+        segments.append(end_buffer)
 
         # After transforming the table into another list of dicts
         # write the timing segmentation info into a .csv file or buffer.
@@ -135,6 +173,8 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
         # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
     textgrid.interval_tier_from_array("Utterance", words)
     textgrid.interval_tier_from_array("Word", words)
+    textgrid.interval_tier_from_array("Segments", segments)
+    textgrid.interval_tier_from_array("Phonetic detail", segments)
     textgrid.write(filename)
 
 
@@ -188,7 +228,7 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
     # from the recorded sound.
     beep, has_speech = audio_processing.detect_beep_and_speech(
         frames, samplerate,filter['b'], filter['a'], filename)
-    table_entry['beep'] = beep
+    table_entry['beep'] = cursor + beep
     table_entry['has speech'] = has_speech
 
     # Start segmentation in FAV and other systems after the beep.
@@ -202,7 +242,6 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
 
 def concatenateWavs(speaker_id, dirname, pronunciation_dict_name, outfilename):
     wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav'))) 
-    wav_files = wav_files[:10]
 
     if(len(wav_files) < 1):
         print("Didn't find any sound files to concatanate in \'{dirname}\'.".format(dirname))
