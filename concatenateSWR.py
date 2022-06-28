@@ -189,8 +189,8 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
         
     with closing(open(prompt_file, 'r')) as prompt_file:
         line = prompt_file.readline().strip()
-        line = " ".join(re.findall("[a-zA-Z]+", line))
-        if line == 'tap test' or line == 'water swallow' or line == 'biteplate':
+        #line = " ".join(re.findall("[a-zA-Z]+", line))
+        if 'tap test' in line or 'water swallow' in line or 'biteplate' in line:
             print('Skipping {file} is a {prompt}'.format(file=prompt_file, prompt=line))
             return cursor, None
 
