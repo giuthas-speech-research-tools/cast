@@ -315,9 +315,9 @@ def concatenateWavs(speaker_id, dirname, pronunciation_dict_name, outfilename):
 
     # Weed out the skipped ones before writing the data out.
     table = [token for token in table if token['id'] != 'n/a']
+    write_concatenated_textgrid(table, out_textgrid, pronunciation_dict_name)
     write_fav_input(table, outfav)
     write_results(table, outcsv)
-    write_concatenated_textgrid(table, out_textgrid, pronunciation_dict_name)
     #pp.pprint(table)
 
 
