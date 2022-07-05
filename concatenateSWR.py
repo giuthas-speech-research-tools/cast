@@ -21,13 +21,15 @@ pp = pprint.PrettyPrinter(indent=4)
 def write_fav_input(table, filename):
     # Finally dump all the metadata into a csv-formated file to
     # be read by FAVE.
+    fieldnames = ['id', 'speaker', 'begin', 'end', 'word']
+    results = [{key: entry[key] for key in fieldnames} for entry in table]
+
     with closing(open(filename, 'w')) as csvfile:
-        fieldnames = ['id', 'speaker', 'begin', 'end', 'word']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, 
                                 delimiter='\t', quoting=csv.QUOTE_NONE,
                                 extrasaction='ignore')
 
-        map(writer.writerow, table)
+        map(writer.writerow, results)
 
     print("Wrote file " + filename + " for FAVE align.")
 
@@ -35,14 +37,18 @@ def write_fav_input(table, filename):
 def write_results(table, filename):
     # Finally dump all the metadata into a csv-formated file to
     # be read by Python or R.
+    fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'sliceEnd', 'word']
+    results = [{key: entry[key] for key in fieldnames} for entry in table]
+
     with closing(open(filename, 'w')) as csvfile:
-        fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'end', 'word']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames,
                                 quoting=csv.QUOTE_NONNUMERIC)
 
         writer.writeheader()
-        map(writer.writerow, table)
-
+        map(writer.writerow, results)
+        for item in results:
+            print(item)
+            writer.writerow(item)
     print("Wrote file " + filename + " for R/Python.")
 
 
