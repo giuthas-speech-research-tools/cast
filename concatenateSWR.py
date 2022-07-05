@@ -19,24 +19,29 @@ import audio_processing
 pp = pprint.PrettyPrinter(indent=4)
 
 def write_fav_input(table, filename):
-    # Finally dump all the metadata into a csv-formated file to
-    # be read by FAVE.
+    """
+    Write the metadata into a csv-formated file to be read by FAVE.
+    """
+    # extrasaction='ignore' does not seem to be working so we do this the long way
     fieldnames = ['id', 'speaker', 'begin', 'end', 'word']
     results = [{key: entry[key] for key in fieldnames} for entry in table]
 
     with closing(open(filename, 'w')) as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, 
-                                delimiter='\t', quoting=csv.QUOTE_NONE,
-                                extrasaction='ignore')
+                                delimiter='\t', quoting=csv.QUOTE_NONE)
 
-        map(writer.writerow, results)
-
+        list(map(writer.writerow, results))
     print("Wrote file " + filename + " for FAVE align.")
 
 
 def write_results(table, filename):
-    # Finally dump all the metadata into a csv-formated file to
-    # be read by Python or R.
+    """ 
+    Write the metadata into a csv-formated file to be read by Python or R.
+
+    This file is meant for the extraction script but also possibly
+    used by later analysis stages.
+    """
+    # extrasaction='ignore' does not seem to be working so we do this the long way
     fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'sliceEnd', 'word']
     results = [{key: entry[key] for key in fieldnames} for entry in table]
 
@@ -45,10 +50,7 @@ def write_results(table, filename):
                                 quoting=csv.QUOTE_NONNUMERIC)
 
         writer.writeheader()
-        map(writer.writerow, results)
-        for item in results:
-            print(item)
-            writer.writerow(item)
+        list(map(writer.writerow, results))
     print("Wrote file " + filename + " for R/Python.")
 
 
@@ -246,8 +248,11 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
     return cursor, frames
 
 
-def concatenateWavs(speaker_id, dirname, pronunciation_dict_name, outfilename):
-    wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav'))) 
+def concatenateWavs(speaker_id, dirname, pronunciation_dict_name, outfilename, test = False):
+    wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav')))
+    # for test runs do only first ten files:
+    if test:
+        wav_files = wav_files[:10]
 
     if(len(wav_files) < 1):
         print("Didn't find any sound files to concatanate in \'{dirname}\'.".format(dirname))
@@ -332,13 +337,20 @@ def main(args):
     pronunciation_dict_name = args.pop()
     original_dirname = args.pop()
     speaker_id = args.pop()
-    concatenateWavs(speaker_id, original_dirname, pronunciation_dict_name, outfilename)
+    if args and args.pop() == '--test':
+        concatenateWavs(speaker_id, original_dirname, 
+            pronunciation_dict_name, outfilename, 
+            test = True)
+    else: 
+        concatenateWavs(speaker_id, original_dirname, 
+            pronunciation_dict_name, outfilename)
 
 
-if (len(sys.argv) != 5):
+if (len(sys.argv) not in [5, 6]):
     print("\nex1_concat.py")
-    print("\tusage: ex1_concat.py speaker_id original_directory pronunciation_dict_name outputfilename")
+    print("\tusage: ex1_concat.py [--test] speaker_id original_directory pronunciation_dict_name outputfilename")
     print("\n\tConcatenates wav files from AAA.")
+    print("\t--test runs the code on only first ten files")
     print("\tWrites a huge wav-file and a .txt for potential input to FAVE.")
     print("\tAlso writes a richer metafile to be read by extract_swr.py or similar.")
     print("\tAlso writes a huge textgrid with phonological transcriptions of the words.")
