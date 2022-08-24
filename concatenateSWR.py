@@ -3,7 +3,6 @@ import csv
 import glob
 import os
 import pprint
-import re
 import sys
 import time
 
