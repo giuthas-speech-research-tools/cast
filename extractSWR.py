@@ -55,7 +55,7 @@ def extractGrids(table, mainGrid, directory):
         textgrid.interval_tier_from_array("segment", segment)
         textgrid.interval_tier_from_array("Phonetic detail", detail)
 
-        textgrid.move_t0(-entry["sliceBegin"])
+        textgrid.offset_time(-entry["sliceBegin"])
 
         filename = os.path.join(directory, entry['id'])+'.TextGrid'
         textgrid.write(filename)
