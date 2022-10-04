@@ -1,6 +1,7 @@
 from contextlib import closing
 import glob
 import os
+from pathlib import Path
 import pprint
 import sys
 
@@ -13,7 +14,7 @@ import textgrids
 
 import cast.audio_processing as audio_processing
 
-from cast.config_file_io import read_na_list
+from cast.config_file_io import read_exclusion_list
 from cast.csv_output import write_results
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -125,21 +126,26 @@ def generate_textgrid(table, filename, pronunciation_dict=None):
     textgrid.write(filename)
 
 
-def process_wav_file(table_entry, wav_file, filename, prompt_file, uti_file, 
-                    na_list, samplerate, number_of_channels, cursor, 
-                    filter=None, detect_beep=False):
-    if filename in na_list:
-        print('Skipping {filename}: Recording is in na_list.txt.'.format(filename=filename))
+def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file, 
+                    exclusion_list, samplerate, number_of_channels, cursor, 
+                    filter=None):
+    if filename in exclusion_list['files']:
+        print('Skipping {filename}: Recording is in exclusion list.'.format(filename=filename))
         return cursor, None
     elif not os.path.isfile(uti_file):
         print ('Skipping {filename}. Recording has no ultrasound data.'.format(filename=filename))
         return cursor, None
         
-    with closing(open(prompt_file, 'r')) as prompt_file:
+    with closing(open(prompt_file_name, 'r')) as prompt_file:
         line = prompt_file.readline().strip()
-        #line = " ".join(re.findall("[a-zA-Z]+", line))
-        if 'tap test' in line or 'water swallow' in line or 'biteplate' in line:
-            print('Skipping {file} is a {prompt}'.format(file=prompt_file, prompt=line))
+
+        # The first condition sees if the whole prompt is excluded, the second condition checks 
+        # if any parts of the prompt match exclucion criteria (for example excluding 'foobar ...' 
+        # based on 'foobar').
+        if (line in exclusion_list['prompts'] or
+            [element for element in exclusion_list['parts of prompts'] if(element in line)]):
+            print('Skipping {file}. Prompt: {prompt} matches exclusion list.'.format(file=filename, 
+                                                                            prompt=line))
             return cursor, None
 
         table_entry['word'] = line
@@ -174,14 +180,17 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file, uti_file,
 
     # setup the high-pass filter for removing the mains frequency (and anything below it)
     # from the recorded sound.
-    if detect_beep:
+    if filter:
         beep, has_speech = audio_processing.detect_beep_and_speech(
             frames, samplerate,filter['b'], filter['a'], filename)
         table_entry['beep'] = cursor + beep
         table_entry['has speech'] = has_speech
+    else:
+        print("wtf")
+        sys.exit()
 
     # Start segmentation in FAV and other systems after the beep.
-    if detect_beep:
+    if filter:
         table_entry['begin'] = cursor + beep + 0.05
     else: 
         table_entry['begin'] = cursor
@@ -192,7 +201,7 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file, uti_file,
     return cursor, frames
 
 
-def concatenate_wavs(speaker_id, dirname, outfilename, test = False, detect_beep = False):
+def concatenate_wavs(speaker_id, dirname, outfilename, config_dict, test = False, detect_beep = False):
     wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav')))
     # for test runs do only first ten files:
     if test:
@@ -229,7 +238,7 @@ def concatenate_wavs(speaker_id, dirname, outfilename, test = False, detect_beep
         prompt_files = [os.path.join(dirname, filename) + '.txt'
                        for filename in filenames]
 
-    na_list = read_na_list(dirname)
+    exlusion_list = read_exclusion_list(Path(config_dict['exclusion_list']))
 
     outwave = outfilename + ".wav"
     outcsv = outfilename + ".csv"
@@ -254,15 +263,14 @@ def concatenate_wavs(speaker_id, dirname, outfilename, test = False, detect_beep
     cursor = 0.0
     frames = None
     for i in range(len(wav_files)):
-        print(wav_files[i])
         if detect_beep:
             cursor, new_frames = process_wav_file(table[i], wav_files[i], filenames[i], 
                     prompt_files[i], uti_files[i], 
-                    na_list, samplerate, number_of_channels, cursor, filter)
+                    exlusion_list, samplerate, number_of_channels, cursor, filter=filter)
         else:
             cursor, new_frames = process_wav_file(table[i], wav_files[i], filenames[i], 
                     prompt_files[i], uti_files[i], 
-                    na_list, samplerate, number_of_channels, cursor)
+                    exlusion_list, samplerate, number_of_channels, cursor)
         if new_frames is None:
             continue
         if frames is None:
@@ -278,5 +286,5 @@ def concatenate_wavs(speaker_id, dirname, outfilename, test = False, detect_beep
     table = [token for token in table if token['id'] != 'n/a']
     write_results(table, outcsv)
     generate_textgrid(table, out_textgrid)
-    pp.pprint(table)
+    # pp.pprint(table)
 
