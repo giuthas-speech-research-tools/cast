@@ -12,7 +12,7 @@ import scipy.io.wavfile as sio_wavfile
 
 import textgrids
 
-import audio_processing
+import cast.audio_processing as audio_processing
 
 from cast.config_file_io import read_na_list
 from cast.csv_output import write_results
@@ -34,6 +34,9 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
     textgrid = textgrids.TextGrid()
     words = []
     segments = []
+
+    print(table)
+    sys.exit()
     for entry in table:
         if 'beep' in entry:
             begin_buffer = {
