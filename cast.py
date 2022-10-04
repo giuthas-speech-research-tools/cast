@@ -3,25 +3,23 @@ import sys
 import time
 
 from cast import concatenate_wavs
+from cast import read_config_file
 
 def main(args):
     outfilename = args.pop()
     original_dirname = args.pop()
     speaker_id = args.pop()
-    if args:
-        if '--test' in args:
-            test = True
-        else:
-            test = False
-        if '--beep' in args:
-            detect_beep = True
-        else:
-            detect_beep = False
-        concatenate_wavs(speaker_id, original_dirname, outfilename, 
-            test = test, detect_beep = detect_beep)
-    else: 
-        concatenate_wavs(speaker_id, original_dirname, 
-            outfilename)
+    config_dict = read_config_file()
+    if '--test' in args:
+        test = True
+    else:
+        test = False
+    if '--beep' in args:
+        detect_beep = True
+    else:
+        detect_beep = False
+    concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
+        test = test, detect_beep = detect_beep)
 
 
 if (len(sys.argv) not in [5, 6]):
