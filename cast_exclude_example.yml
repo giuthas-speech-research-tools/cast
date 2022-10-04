@@ -1,17 +1,16 @@
 # Recordings with these exact prompts will be skipped.
 prompts:
+  - tap test ..
   - water swallow
-  - biteplate
-  - tap test
 
 # Recordings where the prompt contains one of these strings 
 # will be skipped.
 parts of prompts:
-  - water swallow
   - biteplate
   - tap test
+  - water swallow
 
 # Recordings where the filename (without extenstion) matches
 # these strings will be skipped.
 files:
-  - File001
+  - File005
