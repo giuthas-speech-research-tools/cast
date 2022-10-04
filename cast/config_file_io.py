@@ -7,6 +7,25 @@ from typing import Dict, List
 
 import strictyaml
 
+def read_config_file(filepath: Path=None) -> Dict:
+    """
+    Read the old style exclusion list from na_list.txt.
+    
+    If no exclusion list file is present, return an empty array
+    after warning the user.
+    """
+    if filepath is None:
+        filepath = Path('cast_config.yml')
+
+    if filepath.isfile():
+        with closing(open(filepath, 'r')) as yaml_file:
+            config_dict = strictyaml.load(yaml_file.read())
+    else:
+        print("Didn't find {filepath}. Exiting.", str(filepath))
+        sys.exit()
+    return config_dict
+
+
 def read_exclusion_list(filepath: Path) -> Dict:
     """
     Read the old style exclusion list from na_list.txt.
@@ -19,7 +38,7 @@ def read_exclusion_list(filepath: Path) -> Dict:
             exclusion_dict = strictyaml.load(yaml_file.read())
     else:
         exclusion_dict = {}
-        print("Did not find exclusion list. Proceeding anyhow.")
+        print("Did not find the exclusion list. Proceeding anyhow.")
     return exclusion_dict
 
 
