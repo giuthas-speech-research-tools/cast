@@ -9,10 +9,10 @@ import strictyaml
 
 def read_config_file(filepath: Path=None) -> Dict:
     """
-    Read the old style exclusion list from na_list.txt.
+    Read the config file from filepath.
     
-    If no exclusion list file is present, return an empty array
-    after warning the user.
+    If filepath is None, read from the default file 'cast_config.yml'.
+    In both cases if the file does not exist, report this and exit.
     """
     if filepath is None:
         filepath = Path('cast_config.yml')
@@ -28,7 +28,7 @@ def read_config_file(filepath: Path=None) -> Dict:
 
 def read_exclusion_list(filepath: Path) -> Dict:
     """
-    Read the old style exclusion list from na_list.txt.
+    Read the exclusion list from filepath.
     
     If no exclusion list file is present, return an empty array
     after warning the user.
