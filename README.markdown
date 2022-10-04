@@ -14,4 +14,5 @@ CAST *does* do the writing and boundary creation for you. No need to go back and
 - cast.py is the commandline interface for CAST.
 - .gitignore tells git which directories and files to ignore.
 - local_files/ is not included in the distribution, but it is ignored by git. If you are working on CAST with git, this is the place to put your local test files and generated results to keep git from seeing them.
+- cast_exclude_example.yml is an example of an exclusion list. The file is commented to make it easier to create your own based on it. To avoid a host of issues, the format is Strict YAML rather than regular YAML. Refer to documentation [https://hitchdev.com/strictyaml/](here) for details of the format and the file itself for how fields are handled.
 - cast_stable_conda_env.yaml is the specification for the conda/python virtual environment in which CAST runs. Probably easiest to build with mamba rather than conda.
