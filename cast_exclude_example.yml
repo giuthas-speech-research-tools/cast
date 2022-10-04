@@ -6,7 +6,7 @@ prompts:
 
 # Recordings where the prompt contains one of these strings 
 # will be skipped.
-parts_of_prompts:
+parts of prompts:
   - water swallow
   - biteplate
   - tap test
