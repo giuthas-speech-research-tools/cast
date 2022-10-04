@@ -10,7 +10,7 @@ CAST *does* do the writing and boundary creation for you. No need to go back and
 
 ## Files and directories
 
-- cast is the directory that contains most of the processing logic.
+- cast/ is the directory that contains most of the processing logic.
 - cast.py is or rather will be the commandline interface for CAST.
 - .gitignore tells git which directories and files to ignore.
-- local_files is not included in the distribution, but it is ignored by git. If you are working on CAST with git, this is the place to put your local test files and generated results to keep git from seeing them.
+- local_files/ is not included in the distribution, but it is ignored by git. If you are working on CAST with git, this is the place to put your local test files and generated results to keep git from seeing them.
