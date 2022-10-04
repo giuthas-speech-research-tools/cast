@@ -9,22 +9,23 @@ def main(args):
     outfilename = args.pop()
     original_dirname = args.pop()
     speaker_id = args.pop()
-    config_dict = read_config_file()
+ 
+    test = False
+    detect_beep = False
     if '--test' in args:
         test = True
-    else:
-        test = False
     if '--beep' in args:
         detect_beep = True
-    else:
-        detect_beep = False
+ 
+    config_dict = read_config_file()
+ 
     concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
         test = test, detect_beep = detect_beep)
 
 
 if (len(sys.argv) not in [5, 6]):
-    print("\nconcatenate.py")
-    print("\tusage: concatenate.py [--test] [--beep] speaker_id original_directory outputfilename")
+    print("\ncast.py")
+    print("\tusage: cast.py [--test] [--beep] speaker_id original_directory outputfilename")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
     print("\t--test runs the code on only first ten files")
     print("\t--beep finds a 1kHz 50ms beep (go-signal), marks it, and starts segmentation after it.")
