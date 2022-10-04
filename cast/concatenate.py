@@ -104,13 +104,14 @@ def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
     textgrid.write(filename)
 
 
-def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file, 
-                    na_list, samplerate, number_of_channels, cursor, filter):
+def process_wav_file(table_entry, wav_file, filename, prompt_file, uti_file, 
+                    na_list, samplerate, number_of_channels, cursor, 
+                    filter=None, detect_beep=False):
     if filename in na_list:
-        print('Skipping {filename}: Token is in na_list.txt.'.format(filename=filename))
+        print('Skipping {filename}: Recording is in na_list.txt.'.format(filename=filename))
         return cursor, None
     elif not os.path.isfile(uti_file):
-        print ('Skipping {filename}. Token has no ultrasound data.'.format(filename=filename))
+        print ('Skipping {filename}. Recording has no ultrasound data.'.format(filename=filename))
         return cursor, None
         
     with closing(open(prompt_file, 'r')) as prompt_file:
@@ -152,13 +153,17 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
 
     # setup the high-pass filter for removing the mains frequency (and anything below it)
     # from the recorded sound.
-    beep, has_speech = audio_processing.detect_beep_and_speech(
-        frames, samplerate,filter['b'], filter['a'], filename)
-    table_entry['beep'] = cursor + beep
-    table_entry['has speech'] = has_speech
+    if detect_beep:
+        beep, has_speech = audio_processing.detect_beep_and_speech(
+            frames, samplerate,filter['b'], filter['a'], filename)
+        table_entry['beep'] = cursor + beep
+        table_entry['has speech'] = has_speech
 
     # Start segmentation in FAV and other systems after the beep.
-    table_entry['begin'] = cursor + beep + 0.05
+    if detect_beep:
+        table_entry['begin'] = cursor + beep + 0.05
+    else: 
+        table_entry['begin'] = cursor
     cursor += duration
     table_entry['end'] = round(cursor, 3)
     table_entry['sliceEnd'] = cursor
@@ -166,7 +171,7 @@ def processWavFile(table_entry, wav_file, filename, prompt_file, uti_file,
     return cursor, frames
 
 
-def concatenateWavs(speaker_id, dirname, outfilename, test = False):
+def concatenate_wavs(speaker_id, dirname, outfilename, test = False, detect_beep = False):
     wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav')))
     # for test runs do only first ten files:
     if test:
@@ -221,15 +226,22 @@ def concatenateWavs(speaker_id, dirname, outfilename, test = False):
 
     # Read wavs and keep track of file boundaries.
     # TODO: consider moving the whole loop into processWavFile and renaming the function
-    mainsFrequency = 60
-    filter = audio_processing.high_pass(samplerate, mainsFrequency)
+    if detect_beep:
+        mainsFrequency = 60
+        filter = audio_processing.high_pass(samplerate, mainsFrequency)
+
     cursor = 0.0
     frames = None
     for i in range(len(wav_files)):
         print(wav_files[i])
-        cursor, new_frames = processWavFile(table[i], wav_files[i], filenames[i], 
-                prompt_files[i], uti_files[i], 
-                na_list, samplerate, number_of_channels, cursor, filter)
+        if detect_beep:
+            cursor, new_frames = process_wav_file(table[i], wav_files[i], filenames[i], 
+                    prompt_files[i], uti_files[i], 
+                    na_list, samplerate, number_of_channels, cursor, filter)
+        else:
+            cursor, new_frames = process_wav_file(table[i], wav_files[i], filenames[i], 
+                    prompt_files[i], uti_files[i], 
+                    na_list, samplerate, number_of_channels, cursor)
         if new_frames is None:
             continue
         if frames is None:
@@ -249,23 +261,30 @@ def concatenateWavs(speaker_id, dirname, outfilename, test = False):
 
 def main(args):
     outfilename = args.pop()
-#    pronunciation_dict_name = args.pop()
     original_dirname = args.pop()
     speaker_id = args.pop()
-    if args and args.pop() == '--test':
-        concatenateWavs(speaker_id, original_dirname, 
-            outfilename, 
-            test = True)
+    if args:
+        if '--test' in args:
+            test = True
+        else:
+            test = False
+        if '--beep' in args:
+            detect_beep = True
+        else:
+            detect_beep = False
+        concatenate_wavs(speaker_id, original_dirname, outfilename, 
+            test = test, detect_beep = detect_beep)
     else: 
-        concatenateWavs(speaker_id, original_dirname, 
+        concatenate_wavs(speaker_id, original_dirname, 
             outfilename)
 
 
 if (len(sys.argv) not in [5, 6]):
     print("\nconcatenate.py")
-    print("\tusage: concatenate.py [--test] speaker_id original_directory pronunciation_dict_name outputfilename")
+    print("\tusage: concatenate.py [--test] [--beep] speaker_id original_directory pronunciation_dict_name outputfilename")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
     print("\t--test runs the code on only first ten files")
+    print("\t--beep finds a 1kHz 50ms beep (go-signal), marks it, and starts segmentation after it.")
     print("\tWrites a huge wav-file.")
     print("\tAlso writes a richer metafile to be read by extract.py or similar.")
     print("\tAlso writes a huge textgrid with phonological transcriptions of the words.")
