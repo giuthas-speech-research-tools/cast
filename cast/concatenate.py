@@ -3,7 +3,6 @@ import glob
 import os
 import pprint
 import sys
-import time
 
 import numpy as np
 
@@ -19,23 +18,42 @@ from cast.csv_output import write_results
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
+def generate_textgrid(table, filename, pronunciation_dict=None):
 
     for entry in table:
-        print("Processing {word}.".format(
-            word = entry['word']))
+        if pronunciation_dict:
+            if entry['word'] in pronunciation_dict:
+                transcription = pronunciation_dict[entry['word']]
+                print("Generating boundaries for {word} which is pronounced {transcription}.".format(
+                    word = entry['word'], transcription = transcription))
+                entry['transcription'] = transcription
 
-        # Generate an evenly spaced first guess of segmentation by taking the 
-        # middle third of the potential speech interval and chopping it up. 
-        earliest_speech = entry['begin'] +.058
-        seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
-        seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
+                # Generate an evenly spaced first guess of segmentation by taking the 
+                # middle third of the potential speech interval and chopping it up. 
+                earliest_speech = entry['begin'] +.058
+                seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
+                seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
+                boundaries = np.linspace(seg_begin, seg_end, len(transcription) + 3)
+                boundaries = boundaries[1:-1]
+                entry['segment boundaries'] = boundaries
+            else:
+                print("Word \'{word}\' missing from pronunciation dict.".format(word = entry['word']))
+        else:
+            print("Generating boundaries for {word}.".format(word = entry['word']))
+
+            earliest_speech = entry['begin'] +.058
+            seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
+            seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
+            boundaries = [seg_begin, seg_end]
+            boundaries = boundaries[1:-1]
+            entry['segment boundaries'] = boundaries
+
 
     textgrid = textgrids.TextGrid()
     words = []
     segments = []
 
-    print(table)
+    pp.pprint(table)
     sys.exit()
     for entry in table:
         if 'beep' in entry:
@@ -259,5 +277,6 @@ def concatenate_wavs(speaker_id, dirname, outfilename, test = False, detect_beep
     # Weed out the skipped ones before writing the data out.
     table = [token for token in table if token['id'] != 'n/a']
     write_results(table, outcsv)
-    #pp.pprint(table)
+    generate_textgrid(table, out_textgrid)
+    pp.pprint(table)
 
