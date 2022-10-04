@@ -13,5 +13,5 @@ parts_of_prompts:
 
 # Recordings where the filename (without extenstion) matches
 # these strings will be skipped.
-Files:
+files:
   - File001
