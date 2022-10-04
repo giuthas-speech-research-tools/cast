@@ -1,5 +1,4 @@
 from contextlib import closing
-import csv
 import glob
 import os
 import pprint
@@ -15,27 +14,10 @@ import textgrids
 
 import audio_processing
 
+from cast.config_file_io import read_na_list
 from cast.csv_output import write_results
 
 pp = pprint.PrettyPrinter(indent=4)
-
-
-
-def read_na_list(dirname):
-    """
-    Read the exclusion list from na_list.txt.
-    
-    If no exclusioin list file is present, return an empty array
-    after warning the user.
-    """
-    na_file = os.path.join(dirname, 'na_list.txt')
-    if os.path.isfile(na_file):
-        na_list = [line.rstrip('\n') for line in open(na_file)]
-    else:
-        na_list = []
-        print("Didn't find na_list.txt. Proceeding anyhow.")
-    return na_list
-
 
 def write_concatenated_textgrid(table, filename, pronunciation_dict_name):
 

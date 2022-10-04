@@ -4,6 +4,22 @@ import csv
 import os
 import sys
 
+def read_na_list(dirname):
+    """
+    Read the exclusion list from na_list.txt.
+    
+    If no exclusioin list file is present, return an empty array
+    after warning the user.
+    """
+    na_file = os.path.join(dirname, 'na_list.txt')
+    if os.path.isfile(na_file):
+        na_list = [line.rstrip('\n') for line in open(na_file)]
+    else:
+        na_list = []
+        print("Didn't find na_list.txt. Proceeding anyhow.")
+    return na_list
+
+
 
 def read_pronunciation_dict(filename):
     """
