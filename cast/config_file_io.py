@@ -3,11 +3,11 @@ from contextlib import closing
 import csv
 from pathlib import Path
 import sys
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import strictyaml
 
-def read_config_file(filepath: Path=None) -> Dict:
+def read_config_file(filepath: Union[Path, str, None]=None) -> Dict:
     """
     Read the config file from filepath.
     
@@ -16,6 +16,8 @@ def read_config_file(filepath: Path=None) -> Dict:
     """
     if filepath is None:
         filepath = Path('cast_config.yml')
+    elif isinstance(filepath, str):
+        filepath = Path(filepath)
 
     if filepath.is_file():
         with closing(open(filepath, 'r')) as yaml_file:
@@ -59,7 +61,7 @@ def read_na_list(dirpath: Path) -> List:
     return na_list
 
 
-def read_pronunciation_dict(filepath: Path) -> Dict:
+def read_pronunciation_dict(filepath: Union[Path, str]) -> Dict:
     """
     Read the pronuciation dictionary and return it as a dict.
 
@@ -69,6 +71,9 @@ def read_pronunciation_dict(filepath: Path) -> Dict:
 
     Returns a dict where each entry is a list of phonomes.
     """
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
+
     pronunciation_dict = {}
     if filepath.is_file():
         with closing(open(filepath, 'r')) as csvfile:

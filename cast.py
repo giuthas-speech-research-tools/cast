@@ -2,8 +2,7 @@
 import sys
 import time
 
-from cast import concatenate_wavs
-from cast import read_config_file
+from cast import concatenate_wavs, read_config_file, read_pronunciation_dict
 
 def main(args):
     outfilename = args.pop()
@@ -12,18 +11,26 @@ def main(args):
  
     test = False
     detect_beep = False
+    only_words = False
     if '--test' in args:
         test = True
     if '--beep' in args:
         detect_beep = True
+    if '--only_words' in args:
+        only_words = True
  
     config_dict = read_config_file()
- 
-    concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
-        test = test, detect_beep = detect_beep)
+
+    if not only_words:
+        pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation_dictionary'])
+        concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
+            pronunciation_dict=pronunciation_dict, test=test, detect_beep=detect_beep)
+    else:
+        concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
+            test=test, detect_beep=detect_beep)
 
 
-if (len(sys.argv) not in [5, 6]):
+if (len(sys.argv) not in [5, 6, 7]):
     print("\ncast.py")
     print("\tusage: cast.py [--test] [--beep] speaker_id original_directory outputfilename")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")

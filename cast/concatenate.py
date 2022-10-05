@@ -205,7 +205,9 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file
     return cursor, frames
 
 
-def concatenate_wavs(speaker_id, dirname, outfilename, config_dict, test = False, detect_beep = False):
+def concatenate_wavs(speaker_id, dirname, outfilename, config_dict, 
+                        pronunciation_dict=None, 
+                        test=False, detect_beep=False, only_words=False):
     wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav')))
     # for test runs do only first ten files:
     if test:
@@ -289,6 +291,9 @@ def concatenate_wavs(speaker_id, dirname, outfilename, config_dict, test = False
     # Weed out the skipped ones before writing the data out.
     table = [token for token in table if token['id'] != 'n/a']
     write_results(table, outcsv)
-    generate_textgrid(table, out_textgrid)
+    if only_words:
+        generate_textgrid(table, out_textgrid)
+    else:
+        generate_textgrid(table, out_textgrid, pronunciation_dict)
     # pp.pprint(table)
 
