@@ -19,8 +19,7 @@ from cast.csv_output import write_results
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def generate_textgrid(table, filename, pronunciation_dict=None):
-
+def add_boundaries_and_segments(table, pronunciation_dict=None) -> None:
     for entry in table:
         if pronunciation_dict:
             if entry['word'] in pronunciation_dict:
@@ -46,16 +45,19 @@ def generate_textgrid(table, filename, pronunciation_dict=None):
             seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
             seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
             boundaries = [seg_begin, seg_end]
-            boundaries = boundaries[1:-1]
-            entry['segment boundaries'] = boundaries
+            boundaries = boundaries[0:-1]
+            entry['segment boundaries'] = boundaries    
 
+
+def generate_textgrid(table, filename, pronunciation_dict=None):
+
+    add_boundaries_and_segments(table, pronunciation_dict)
 
     textgrid = textgrids.TextGrid()
     words = []
     segments = []
 
-    pp.pprint(table)
-    sys.exit()
+    # pp.pprint(table)
     for entry in table:
         if 'beep' in entry:
             begin_buffer = {
@@ -74,6 +76,7 @@ def generate_textgrid(table, filename, pronunciation_dict=None):
             words.append(beep)
             segments.append(beep)
 
+            print(entry)
             after_beep = {
                 'label': '', 
                 'begin': entry['beep'] + 0.05, 
@@ -98,14 +101,15 @@ def generate_textgrid(table, filename, pronunciation_dict=None):
             }
         words.append(word)
 
-        # For segmentation a bunch of segment intervals
-        for i, label in enumerate(entry['transcription']):
-            segment = {
-                'label': label,
-                'begin': entry['segment boundaries'][i],
-                'end': entry['segment boundaries'][i+1]
-            }
-            segments.append(segment)
+        if pronunciation_dict:
+            # For segmentation a bunch of segment intervals
+            for i, label in enumerate(entry['transcription']):
+                segment = {
+                    'label': label,
+                    'begin': entry['segment boundaries'][i],
+                    'end': entry['segment boundaries'][i+1]
+                }
+                segments.append(segment)
 
         end_buffer = {
             'label': '', 
@@ -121,8 +125,9 @@ def generate_textgrid(table, filename, pronunciation_dict=None):
         # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
     textgrid.interval_tier_from_array("Utterance", words)
     textgrid.interval_tier_from_array("Word", words)
-    textgrid.interval_tier_from_array("Segments", segments)
-    textgrid.interval_tier_from_array("Phonetic detail", segments)
+    if pronunciation_dict:
+        textgrid.interval_tier_from_array("Phoneme", segments)
+        textgrid.interval_tier_from_array("Phone", segments)
     textgrid.write(filename)
 
 
