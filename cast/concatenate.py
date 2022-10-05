@@ -19,7 +19,8 @@ from cast.csv_output import write_results
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def add_boundaries_and_segments(table, pronunciation_dict=None) -> None:
+def add_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> None:
+
     for entry in table:
         if pronunciation_dict:
             if entry['word'] in pronunciation_dict:
@@ -48,15 +49,13 @@ def add_boundaries_and_segments(table, pronunciation_dict=None) -> None:
             entry['segment boundaries'] = boundaries    
 
 
-def generate_textgrid(table, filename, pronunciation_dict=None):
+def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> None:
 
-    add_boundaries_and_segments(table, pronunciation_dict)
+    add_boundaries_and_segments(table, config_dict, pronunciation_dict)
 
     textgrid = textgrids.TextGrid()
     words = []
     segments = []
-
-    pp.pprint(table)
     for entry in table:
         if 'beep' in entry:
             begin_buffer = {
@@ -242,7 +241,7 @@ def concatenate_wavs(speaker_id, dirname, outfilename, config_dict,
         prompt_files = [os.path.join(dirname, filename) + '.txt'
                        for filename in filenames]
 
-    exlusion_list = read_exclusion_list(Path(config_dict['exclusion_list']))
+    exlusion_list = read_exclusion_list(Path(config_dict['exclusion list']))
 
     outwave = outfilename + ".wav"
     outcsv = outfilename + ".csv"
@@ -290,8 +289,8 @@ def concatenate_wavs(speaker_id, dirname, outfilename, config_dict,
     table = [token for token in table if token['id'] != 'n/a']
     write_results(table, outcsv)
     if only_words:
-        generate_textgrid(table, out_textgrid)
+        generate_textgrid(table, out_textgrid, config_dict)
     else:
-        generate_textgrid(table, out_textgrid, pronunciation_dict)
+        generate_textgrid(table, out_textgrid, config_dict, pronunciation_dict)
     # pp.pprint(table)
 

@@ -1,11 +1,14 @@
-exclusion list: cast_exclude_example.yml
-pronunciation dictionary: local_data/gam_mono_and_disyllables_for_automatic_segmentation.csv
+speaker id: gam-1-2
+data directory: local_data/gam-1-2
 outputfilename: local_data/gam-1-2-test
 
-options:
-  detect_beep: True
-  only_words: False
+flags:
+  detect beep: True
+  only words: False
   test: True
+
+exclusion list: cast_exclude_example.yml
+pronunciation dictionary: local_data/gam_mono_and_disyllables_for_automatic_segmentation.csv
 
 word guess:
   begin: 0.0833

@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 from typing import Dict, List, Union
 
-import strictyaml
+from strictyaml import load, Map, Str, Float, Bool, YAMLError
 
 def read_config_file(filepath: Union[Path, str, None]=None) -> Dict:
     """
@@ -21,7 +21,28 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> Dict:
 
     if filepath.is_file():
         with closing(open(filepath, 'r')) as yaml_file:
-            config_dict = strictyaml.load(yaml_file.read())
+            schema = Map({
+                "speaker id": Str(), 
+                "data directory": Str(), 
+                "outputfilename": Str(), 
+                "flags": Map({
+                    "detect beep": Bool(),
+                    "only words": Bool(),
+                    "test": Bool()
+                    }), 
+                "exclusion list": Str(), 
+                "pronunciation dictionary": Str(), 
+                "word guess": Map({
+                    "begin": Float(),
+                    "end": Float()
+                    })
+                })
+            try:
+                config_dict = load(yaml_file.read(), schema)
+            except YAMLError as error:
+                print(f"Fatal error in reading {filepath}:")
+                print(error)
+                sys.exit()
     else:
         print(f"Didn't find {filepath}. Exiting.".format(str(filepath)))
         sys.exit()
@@ -37,11 +58,10 @@ def read_exclusion_list(filepath: Path) -> Dict:
     """
     if filepath.is_file():
         with closing(open(filepath, 'r')) as yaml_file:
-            exclusion_dict = strictyaml.load(yaml_file.read())
+            exclusion_dict = load(yaml_file.read())
     else:
         exclusion_dict = {}
-        print(f"Did not find the exclusion list at {filepath}. Proceeding anyhow.".format( 
-                str(filepath)))
+        print(f"Did not find the exclusion list at {filepath}. Proceeding anyhow.")
     return exclusion_dict.data
 
 
@@ -78,8 +98,9 @@ def read_pronunciation_dict(filepath: Union[Path, str]) -> Dict:
     if filepath.is_file():
         with closing(open(filepath, 'r')) as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
-            pronunciation_dict = {row[0]: list(filter(None, row[1:])) for row in reader}
+            pronunciation_dict = {row[0]: list(filter(None, row[1:])) 
+                                    for row in reader}
         return pronunciation_dict
     else:
-        print(f"Didn't find {pronunciation_dict}. Exiting.".format(pronunciation_dict))
+        print(f"Didn't find {pronunciation_dict}. Exiting.")
         sys.exit()

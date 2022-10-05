@@ -5,24 +5,20 @@ import time
 from cast import concatenate_wavs, read_config_file, read_pronunciation_dict
 
 def main(args):
-    outfilename = args.pop()
-    original_dirname = args.pop()
-    speaker_id = args.pop()
- 
-    test = False
-    detect_beep = False
-    only_words = False
-    if '--test' in args:
-        test = True
-    if '--beep' in args:
-        detect_beep = True
-    if '--only_words' in args:
-        only_words = True
- 
-    config_dict = read_config_file()
+    config_filename = None
+    if args:
+        config_filename = args.pop()
+    config_dict = read_config_file(config_filename)
 
-    if not only_words:
-        pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation_dictionary'])
+    speaker_id = config_dict['speaker id']
+    original_dirname = config_dict['data directory']
+    outfilename = config_dict['outputfilename']
+
+    detect_beep = config_dict['flags']['detect beep']
+    test = config_dict['flags']['test']
+
+    if not config_dict['flags']['only words']:
+        pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation dictionary'])
         concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
             pronunciation_dict=pronunciation_dict, test=test, detect_beep=detect_beep)
     else:
@@ -30,17 +26,14 @@ def main(args):
             test=test, detect_beep=detect_beep)
 
 
-if (len(sys.argv) not in [5, 6, 7]):
+if (len(sys.argv) not in [0,1]):
     print("\ncast.py")
-    print("\tusage: cast.py [--test] [--beep] [--only_words] speaker_id original_directory outputfilename")
+    print("\tusage: cast.py [config strict yaml file]")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
-    print("\t--test runs the code on only first ten files")
-    print("\t--beep finds a 1kHz 50ms beep (go-signal), marks it, and starts segmentation after it.")
-    print("\t--only_words generates only Utterance and Word tiers in the textgrid.")
-    print("\tWrites a huge wav-file.")
-    print("\tAlso writes a richer metafile to be read by extract.py or similar.")
-    print("\tAlso writes a huge textgrid with phonological transcriptions of the words.")
-    sys.exit(0)
+    print("\tWrites a huge wav-file, a corresponding textgrid, and")
+    print("\ta metafile to assist in extracting shorter textgrid after annotation.")
+    print("\n\tAll options are provided by the config file which defaults to cast_config.yml.")
+    sys.exit(0) 
 
 
 if (__name__ == '__main__'):
