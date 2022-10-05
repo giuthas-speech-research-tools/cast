@@ -36,6 +36,7 @@ if (len(sys.argv) not in [5, 6]):
 
 
 if (__name__ == '__main__'):
-    t = time.time()
+    start_time = time.perf_counter()
     main(sys.argv[1:])
-    print('Elapsed time {elapsed_time}'.format(elapsed_time = (time.time() - t)))
+    elapsed_time = time.perf_counter() - start_time
+    print(f'Elapsed time was {elapsed_time}.')
