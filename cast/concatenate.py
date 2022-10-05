@@ -20,31 +20,31 @@ from cast.csv_output import write_results
 pp = pprint.PrettyPrinter(indent=4)
 
 def add_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> None:
-
+    begin_coeff = config_dict['word guess']['begin']
+    end_coeff = config_dict['word guess']['end']
     for entry in table:
         if pronunciation_dict:
             if entry['word'] in pronunciation_dict:
                 transcription = pronunciation_dict[entry['word']]
-                print("Generating boundaries for {word} which is pronounced {transcription}.".format(
-                    word = entry['word'], transcription = transcription))
+                print(f"Generating boundaries for {entry['word']} which is pronounced {transcription}.")
                 entry['transcription'] = transcription
 
                 # Generate an evenly spaced first guess of segmentation by taking the 
                 # middle third of the potential speech interval and chopping it up. 
                 earliest_speech = entry['begin'] +.058
-                seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
-                seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
+                seg_begin = earliest_speech + (entry['end'] - earliest_speech)*begin_coeff
+                seg_end = earliest_speech + (entry['end'] - earliest_speech)*end_coeff
                 boundaries = np.linspace(seg_begin, seg_end, len(transcription) + 3)
                 boundaries = boundaries[1:-1]
                 entry['segment boundaries'] = boundaries
             else:
-                print("Word \'{word}\' missing from pronunciation dict.".format(word = entry['word']))
+                print(f"Word \'{entry['word']}\' missing from pronunciation dict.")
         else:
-            print("Generating boundaries for {word}.".format(word = entry['word']))
+            print(f"Generating boundaries for {entry['word']}.")
 
             earliest_speech = entry['begin'] +.058
-            seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
-            seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
+            seg_begin = earliest_speech + (entry['end'] - earliest_speech)*begin_coeff
+            seg_end = earliest_speech + (entry['end'] - earliest_speech)*end_coeff
             boundaries = [seg_begin, seg_end]
             entry['segment boundaries'] = boundaries    
 
@@ -226,10 +226,11 @@ def concatenate_wavs(speaker_id, dirname, outfilename, config_dict,
                 'end':'n/a', 
                 'word':'n/a'} 
              for i, wavfile in  enumerate(wav_files)]
+
     # Only add the beep entry if we are going to be using it.
     if detect_beep:
-        beep = {'beep':'n/a'}
-        table = [entry.update(beep) for entry in table]
+        for entry in table:
+            entry['beep'] = 'n/a' 
 
     prompt_files = sorted(glob.glob(os.path.join(dirname, '*.txt'))) 
 
