@@ -27,7 +27,10 @@ def write_results(table, filename):
     used by later analysis stages.
     """
     # extrasaction='ignore' does not seem to be working so we do this the long way
-    fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'sliceEnd', 'word']
+    if 'beep' in table[0]:
+        fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'sliceEnd', 'word']
+    else: 
+        fieldnames = ['id', 'speaker', 'sliceBegin', 'begin', 'sliceEnd', 'word']
     results = [{key: entry[key] for key in fieldnames} for entry in table]
 
     with closing(open(filename, 'w')) as csvfile:

@@ -45,7 +45,6 @@ def add_boundaries_and_segments(table, pronunciation_dict=None) -> None:
             seg_begin = earliest_speech + (entry['end'] - earliest_speech)/12
             seg_end = earliest_speech + (entry['end'] - earliest_speech)*2/3
             boundaries = [seg_begin, seg_end]
-            boundaries = boundaries[0:-1]
             entry['segment boundaries'] = boundaries    
 
 
@@ -57,7 +56,7 @@ def generate_textgrid(table, filename, pronunciation_dict=None):
     words = []
     segments = []
 
-    # pp.pprint(table)
+    pp.pprint(table)
     for entry in table:
         if 'beep' in entry:
             begin_buffer = {
@@ -69,14 +68,13 @@ def generate_textgrid(table, filename, pronunciation_dict=None):
             segments.append(begin_buffer)
 
             beep = {
-                'label': '', 
+                'label': 'BEEP', 
                 'begin': entry['beep'], 
                 'end': entry['beep'] + 0.05
                 }
             words.append(beep)
             segments.append(beep)
 
-            print(entry)
             after_beep = {
                 'label': '', 
                 'begin': entry['beep'] + 0.05, 
@@ -189,9 +187,6 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file
             frames, samplerate,filter['b'], filter['a'], filename)
         table_entry['beep'] = cursor + beep
         table_entry['has speech'] = has_speech
-    else:
-        print("wtf")
-        sys.exit()
 
     # Start segmentation in FAV and other systems after the beep.
     if filter:
@@ -228,11 +223,14 @@ def concatenate_wavs(speaker_id, dirname, outfilename, config_dict,
                 'id':'n/a',
                 'speaker':speaker_id, 
                 'sliceBegin':'n/a',
-                'beep':'n/a',
                 'begin':'n/a', 
                 'end':'n/a', 
                 'word':'n/a'} 
              for i, wavfile in  enumerate(wav_files)]
+    # Only add the beep entry if we are going to be using it.
+    if detect_beep:
+        beep = {'beep':'n/a'}
+        table = [entry.update(beep) for entry in table]
 
     prompt_files = sorted(glob.glob(os.path.join(dirname, '*.txt'))) 
 
