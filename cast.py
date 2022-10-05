@@ -32,10 +32,11 @@ def main(args):
 
 if (len(sys.argv) not in [5, 6, 7]):
     print("\ncast.py")
-    print("\tusage: cast.py [--test] [--beep] speaker_id original_directory outputfilename")
+    print("\tusage: cast.py [--test] [--beep] [--only_words] speaker_id original_directory outputfilename")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
     print("\t--test runs the code on only first ten files")
     print("\t--beep finds a 1kHz 50ms beep (go-signal), marks it, and starts segmentation after it.")
+    print("\t--only_words generates only Utterance and Word tiers in the textgrid.")
     print("\tWrites a huge wav-file.")
     print("\tAlso writes a richer metafile to be read by extract.py or similar.")
     print("\tAlso writes a huge textgrid with phonological transcriptions of the words.")
