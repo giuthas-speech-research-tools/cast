@@ -130,25 +130,24 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file
                     exclusion_list, samplerate, number_of_channels, cursor, 
                     filter=None):
     if filename in exclusion_list['files']:
-        print('Skipping {filename}: Recording is in exclusion list.'.format(filename=filename))
+        print(f'Skipping {filename}: Recording is in exclusion list.')
         return cursor, None
     elif not os.path.isfile(uti_file):
-        print ('Skipping {filename}. Recording has no ultrasound data.'.format(filename=filename))
+        print (f'Skipping {filename}. Recording has no ultrasound data.')
         return cursor, None
         
     with closing(open(prompt_file_name, 'r')) as prompt_file:
-        line = prompt_file.readline().strip()
+        prompt = prompt_file.readline().strip()
 
         # The first condition sees if the whole prompt is excluded, the second condition checks 
         # if any parts of the prompt match exclucion criteria (for example excluding 'foobar ...' 
         # based on 'foobar').
-        if (line in exclusion_list['prompts'] or
-            [element for element in exclusion_list['parts of prompts'] if(element in line)]):
-            print('Skipping {file}. Prompt: {prompt} matches exclusion list.'.format(file=filename, 
-                                                                            prompt=line))
+        if (prompt in exclusion_list['prompts'] or
+            [element for element in exclusion_list['parts of prompts'] if(element in prompt)]):
+            print(f'Skipping {filename}. Prompt: {prompt} matches exclusion list.')
             return cursor, None
 
-        table_entry['word'] = line
+        table_entry['word'] = prompt
 
     (next_samplerate, frames) = sio_wavfile.read(wav_file)
     n_frames = frames.shape[0]
