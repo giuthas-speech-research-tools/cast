@@ -26,7 +26,7 @@ def main(args):
             test=test, detect_beep=detect_beep)
 
 
-if (len(sys.argv) not in [0,1]):
+if (len(sys.argv) not in [1,2]):
     print("\ncast.py")
     print("\tusage: cast.py [config strict yaml file]")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
