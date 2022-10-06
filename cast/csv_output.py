@@ -19,7 +19,7 @@ def write_fav_input(table, filename):
     print("Wrote file " + filename + " for FAVE align.")
 
 
-def write_results(table, filename):
+def write_results(table, filename, detect_beep):
     """ 
     Write the metadata into a csv-formated file to be read by Python or R.
 
@@ -27,10 +27,10 @@ def write_results(table, filename):
     used by later analysis stages.
     """
     # extrasaction='ignore' does not seem to be working so we do this the long way
-    if 'beep' in table[0]:
-        fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'sliceEnd', 'word']
+    if detect_beep:
+        fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'sliceEnd', 'prompt']
     else: 
-        fieldnames = ['id', 'speaker', 'sliceBegin', 'begin', 'sliceEnd', 'word']
+        fieldnames = ['id', 'speaker', 'sliceBegin', 'begin', 'sliceEnd', 'prompt']
     results = [{key: entry[key] for key in fieldnames} for entry in table]
 
     with closing(open(filename, 'w')) as csvfile:
@@ -39,4 +39,4 @@ def write_results(table, filename):
 
         writer.writeheader()
         list(map(writer.writerow, results))
-    print("Wrote file " + filename + " for R/Python.")
+    print(f"Wrote file {filename} for R/Python.")

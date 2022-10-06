@@ -50,7 +50,7 @@ def check_and_load_aaa_meta(speaker_id: str, directory: Path, test: bool) -> lis
                 'sliceBegin':'n/a',
                 'begin':'n/a', 
                 'end':'n/a', 
-                'word':'n/a'} 
+                'prompt':'n/a'} 
             for wavfile in wav_files]
 
     for entry in table: 

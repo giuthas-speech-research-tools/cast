@@ -27,9 +27,9 @@ def add_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> 
     end_coeff = config_dict['word guess']['end']
     for entry in table:
         if pronunciation_dict:
-            if entry['word'] in pronunciation_dict:
-                transcription = pronunciation_dict[entry['word']]
-                print(f"Generating boundaries for {entry['word']} which is pronounced {transcription}.")
+            if entry['prompt'] in pronunciation_dict:
+                transcription = pronunciation_dict[entry['prompt']]
+                print(f"Generating boundaries for {entry['prompt']} which is pronounced {transcription}.")
                 entry['transcription'] = transcription
 
                 # Generate an evenly spaced first guess of segmentation by taking the 
@@ -41,9 +41,9 @@ def add_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> 
                 boundaries = boundaries[1:-1]
                 entry['segment boundaries'] = boundaries
             else:
-                print(f"Word \'{entry['word']}\' missing from pronunciation dict.")
+                print(f"Word \'{entry['prompt']}\' missing from pronunciation dict.")
         else:
-            print(f"Generating boundaries for {entry['word']}.")
+            print(f"Generating boundaries for {entry['prompt']}.")
 
             earliest_speech = entry['begin'] +.058
             seg_begin = earliest_speech + (entry['end'] - earliest_speech)*begin_coeff
@@ -95,7 +95,7 @@ def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> 
 
         # For words and utterances one long interval.
         word = {
-            'label': entry['word'], 
+            'label': entry['prompt'], 
             'begin': entry['segment boundaries'][0], 
             'end': entry['segment boundaries'][-1]
             }
@@ -133,7 +133,7 @@ def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> 
 
 def process_wav_file(table_entry, samplerate, number_of_channels, cursor, 
                     filter=None) -> Tuple[float, np.ndarray]:
-    (next_samplerate, frames) = sio_wavfile.read(table_entry['wav_file'])
+    (next_samplerate, frames) = sio_wavfile.read(table_entry['wav_path'])
     n_frames = frames.shape[0]
     if len(frames.shape) == 1:
         n_channels = 1
@@ -212,9 +212,9 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
 
     data_source = config_dict['data source']
     if data_source == 'AAA':
-        check_and_load_aaa_meta(speaker_id, directory, test)
+        table = check_and_load_aaa_meta(speaker_id, directory, test)
     elif data_source == 'RASL':
-        check_and_load_rasl_meta(speaker_id, directory, test)
+        table = check_and_load_rasl_meta(speaker_id, directory, test)
     else:
         print(f"Unknown data source: {data_source}. Exiting.")
         sys.exit()
@@ -226,9 +226,9 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
         for entry in table:
             entry['beep'] = 'n/a' 
 
-    outwave = outputfile + ".wav"
-    outcsv = outputfile + ".csv"
-    out_textgrid = outputfile + ".TextGrid"
+    outwave = outputfile.with_suffix(".wav")
+    outcsv = outputfile.with_suffix(".csv")
+    out_textgrid = outputfile.with_suffix(".TextGrid")
     
     # find params from first file
     samplerate, test_data = sio_wavfile.read(table[0]['wav_path'])
@@ -266,8 +266,8 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
         sio_wavfile.write(output, samplerate, frames)
 
     # Weed out the skipped ones before writing the data out.
-    table = [token for token in table if token['id'] != 'n/a']
-    write_results(table, outcsv)
+    table = [token for token in table if not token['excluded']]
+    write_results(table, outcsv, detect_beep)
     if only_words:
         generate_textgrid(table, out_textgrid, config_dict)
     else:
