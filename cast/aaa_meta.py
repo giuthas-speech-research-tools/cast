@@ -1,8 +1,7 @@
 from contextlib import closing
 from pathlib import Path
-from typing import List
 
-def add_prompt_info(table: List, exclusion_list: List) -> None:
+def add_prompt_info(table: list, exclusion_list: list) -> None:
     """
     Check for existence of prompts and add the prompt to table.
 
@@ -30,7 +29,7 @@ def add_prompt_info(table: List, exclusion_list: List) -> None:
                 entry['word'] = prompt
 
 
-def check_and_load_aaa_meta(speaker_id: str, directory: Path, exclusion_list: List, test: bool) -> List:
+def check_and_load_aaa_meta(speaker_id: str, directory: Path, test: bool) -> list:
     # Since we are concerned with audio annotation, wav files 
     # determine the name list for all other files.
     wav_files = sorted(directory.glob('*.wav'))
@@ -67,9 +66,6 @@ def check_and_load_aaa_meta(speaker_id: str, directory: Path, exclusion_list: Li
         filename = entry['filename']
         if not entry['ultra_path'].is_file():
             print(f'Excluding {filename}. Recording has no ultrasound file.')
-            entry['excluded'] = True
-        if filename in exclusion_list['files']:
-            print(f'Excluding {filename}: Recording is in exclusion list.')
             entry['excluded'] = True
         
     add_prompt_info(table)
