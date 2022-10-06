@@ -3,11 +3,11 @@ from contextlib import closing
 import csv
 from pathlib import Path
 import sys
-from typing import Dict, List, Union
+from typing import Union
 
 from strictyaml import load, Map, Str, Float, Bool, YAMLError
 
-def read_config_file(filepath: Union[Path, str, None]=None) -> Dict:
+def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
     """
     Read the config file from filepath.
     
@@ -49,7 +49,7 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> Dict:
     return config_dict.data
 
 
-def read_exclusion_list(filepath: Path) -> Dict:
+def read_exclusion_list(filepath: Path) -> dict:
     """
     Read the exclusion list from filepath.
     
@@ -65,7 +65,7 @@ def read_exclusion_list(filepath: Path) -> Dict:
     return exclusion_dict.data
 
 
-def read_na_list(dirpath: Path) -> List:
+def read_na_list(dirpath: Path) -> list[str]:
     """
     Read the old style exclusion list from na_list.txt.
     
@@ -81,7 +81,7 @@ def read_na_list(dirpath: Path) -> List:
     return na_list
 
 
-def read_pronunciation_dict(filepath: Union[Path, str]) -> Dict:
+def read_pronunciation_dict(filepath: Union[Path, str]) -> dict:
     """
     Read the pronuciation dictionary and return it as a dict.
 
