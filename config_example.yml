@@ -13,8 +13,10 @@ flags:
 # Strict YAML file specifying recordings to be excluded based 
 # on both prompts and file names.
 exclusion list: cast_exclude_example.yml
-# Consists of words followed by their segments in arbitrary transcription.  
-pronunciation dictionary: local_data/gam_mono_and_disyllables_for_automatic_segmentation.csv
+
+# Consists of words followed by their segments in arbitrary transcription. 
+# When only words is True this can be omitted.
+pronunciation dictionary: 
 
 # Start and end points of the guess where the word or speech might 
 # be in normalised time. If beep detection is used the normalised
