@@ -186,7 +186,17 @@ def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
     for entry in table:
         filename = entry['filename']
         if filename in exclusion_list['files']:
-            print(f'Excluding {filename}: Recording is in exclusion list.')
+            print(f'Excluding {filename}: File is in exclusion list.')
+            entry['excluded'] = True
+
+        # The first condition sees if the whole prompt is excluded, 
+        # the second condition checks if any parts of the prompt 
+        # match exclucion criteria (for example excluding 'foobar ...' 
+        # based on 'foobar').
+        prompt = entry['prompt']
+        if (prompt in exclusion_list['prompts'] or
+            [element for element in exclusion_list['parts of prompts'] if(element in prompt)]):
+            print(f'Excluding {filename}. Prompt: {prompt} matches exclusion list.')
             entry['excluded'] = True
 
 

@@ -1,7 +1,7 @@
 from contextlib import closing
 from pathlib import Path
 
-def add_prompt_info(table: list, exclusion_list: list) -> None:
+def add_prompt_info(table: list) -> None:
     """
     Check for existence of prompts and add the prompt to table.
 
@@ -17,16 +17,7 @@ def add_prompt_info(table: list, exclusion_list: list) -> None:
         else:
             with closing(open(entry['prompt_path'], 'r')) as prompt_file:
                 prompt = prompt_file.readline().strip()
-
-                # The first condition sees if the whole prompt is excluded, 
-                # the second condition checks if any parts of the prompt 
-                # match exclucion criteria (for example excluding 'foobar ...' 
-                # based on 'foobar').
-                if (prompt in exclusion_list['prompts'] or
-                    [element for element in exclusion_list['parts of prompts'] if(element in prompt)]):
-                    print(f'Excluding {filename}. Prompt: {prompt} matches exclusion list.')
-                    entry['excluded'] = True
-                entry['word'] = prompt
+                entry['prompt'] = prompt
 
 
 def check_and_load_aaa_meta(speaker_id: str, directory: Path, test: bool) -> list:
