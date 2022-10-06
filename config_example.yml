@@ -1,3 +1,21 @@
+# Structure of this file matters, but order does not.
+# id: some id
+# name: some name
+#
+# and
+# name: some name
+# id: some id
+#
+# produce the same result.
+# person:
+#   name: some name
+#
+# and 
+# 
+#   name: some name
+# person:
+# do not.
+
 # Speaker id is used in the output csv file.
 speaker id: gam-1-2
 # This is where we read the wavs and metadata from.
