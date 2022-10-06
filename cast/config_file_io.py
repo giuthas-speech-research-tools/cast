@@ -22,7 +22,7 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
     if filepath.is_file():
         with closing(open(filepath, 'r')) as yaml_file:
             schema = Map({
-                "data type": Str(), 
+                "data source": Str(), 
                 "speaker id": Str(), 
                 "data directory": Str(), 
                 "outputfilename": Str(), 

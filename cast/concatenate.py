@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import pprint
 import sys
+from typing import Tuple, Union
 
 import numpy as np
 
@@ -16,6 +17,8 @@ import cast.audio_processing as audio_processing
 
 from cast.config_file_io import read_exclusion_list
 from cast.csv_output import write_results
+from cast.aaa_meta import check_and_load_aaa_meta
+from cast.rasl_meta import check_and_load_rasl_meta
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -128,30 +131,9 @@ def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> 
     textgrid.write(filename)
 
 
-def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file, 
-                    exclusion_list, samplerate, number_of_channels, cursor, 
-                    filter=None):
-    if filename in exclusion_list['files']:
-        print(f'Skipping {filename}: Recording is in exclusion list.')
-        return cursor, None
-    elif not os.path.isfile(uti_file):
-        print (f'Skipping {filename}. Recording has no ultrasound data.')
-        return cursor, None
-        
-    with closing(open(prompt_file_name, 'r')) as prompt_file:
-        prompt = prompt_file.readline().strip()
-
-        # The first condition sees if the whole prompt is excluded, the second condition checks 
-        # if any parts of the prompt match exclucion criteria (for example excluding 'foobar ...' 
-        # based on 'foobar').
-        if (prompt in exclusion_list['prompts'] or
-            [element for element in exclusion_list['parts of prompts'] if(element in prompt)]):
-            print(f'Skipping {filename}. Prompt: {prompt} matches exclusion list.')
-            return cursor, None
-
-        table_entry['word'] = prompt
-
-    (next_samplerate, frames) = sio_wavfile.read(wav_file)
+def process_wav_file(table_entry, samplerate, number_of_channels, cursor, 
+                    filter=None) -> Tuple[float, np.ndarray]:
+    (next_samplerate, frames) = sio_wavfile.read(table_entry['wav_file'])
     n_frames = frames.shape[0]
     if len(frames.shape) == 1:
         n_channels = 1
@@ -161,21 +143,20 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file
     if next_samplerate != samplerate:
         print('Mismatched sample rates in sound files.')
         print("{next_samplerate} in {infile} is not the common one: {samplerate}".format(
-            next_samplerate=next_samplerate, infile=wav_file, samplerate=samplerate))
+            next_samplerate=next_samplerate, infile=table_entry['wav_file'], 
+            samplerate=samplerate))
         print('Exiting.')
         sys.exit()
 
     if n_channels != number_of_channels:
         print('Mismatched numbers of channels in sound files.')
-        print("{n_channels} in {infile} is not the common one: {number_of_channels}".format( 
-            n_channels=n_channels, infile=wav_file, number_of_channels=number_of_channels))
+        print("{n_channels} in {infile} is not the common one: {number_of_channels}".format(
+            n_channels=n_channels, infile=table_entry['wav_file'], 
+            number_of_channels=number_of_channels))
         print('Exiting.')
         sys.exit()
 
     duration = n_frames / float(samplerate)
-
-    # this rather than full path to avoid upsetting praat/FAV
-    table_entry['id'] = filename
 
     table_entry['sliceBegin'] = cursor
 
@@ -183,7 +164,7 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file
     # from the recorded sound.
     if filter:
         beep, has_speech = audio_processing.detect_beep_and_speech(
-            frames, samplerate,filter['b'], filter['a'], filename)
+            frames, samplerate,filter['b'], filter['a'], table_entry['filename'])
         table_entry['beep'] = cursor + beep
         table_entry['has speech'] = has_speech
 
@@ -198,61 +179,49 @@ def process_wav_file(table_entry, wav_file, filename, prompt_file_name, uti_file
 
     return cursor, frames
 
+def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
 
-def concatenate_wavs(speaker_id, dirname, outfilename, config_dict, 
-                        pronunciation_dict=None, 
-                        test=False, detect_beep=False, only_words=False):
-    wav_files = sorted(glob.glob(os.path.join(dirname, '*.wav')))
-    # for test runs do only first ten files:
-    if test:
-        wav_files = wav_files[:10]
+    exclusion_list = read_exclusion_list(exclusion_path)
 
-    if(len(wav_files) < 1):
-        print("Didn't find any sound files to concatanate in \'{dirname}\'.".format(dirname))
-        exit()
+    for entry in table:
+        filename = entry['filename']
+        if filename in exclusion_list['files']:
+            print(f'Excluding {filename}: Recording is in exclusion list.')
+            entry['excluded'] = True
 
-    # Split first to get rid of the suffix, then to get rid of the path.
-    filenames = [filename.split('.')[-2].split('/').pop() 
-                 for filename in wav_files]
 
-    # initialise table with the speaker_id and name repeated, wav_file name
-    # from the list, and other fields empty
-    table = [{
-                'wav_path': wavfile,
-                'id':'n/a',
-                'speaker':speaker_id, 
-                'sliceBegin':'n/a',
-                'begin':'n/a', 
-                'end':'n/a', 
-                'word':'n/a'} 
-             for i, wavfile in  enumerate(wav_files)]
+
+def concatenate_wavs(speaker_id: str, directory: Union[str, Path], 
+                        outputfile: Union[str, Path], config_dict: dict, 
+                        pronunciation_dict: dict=None, 
+                        test: bool=False, detect_beep: bool=False, only_words: bool=False):
+    if isinstance(directory, str):
+        directory = Path(directory)
+    if isinstance(outputfile, str):
+        outputfile = Path(outputfile)
+
+    data_source = config_dict['data source']
+    if data_source == 'AAA':
+        check_and_load_aaa_meta(speaker_id, directory, test)
+    elif data_source == 'RASL':
+        check_and_load_rasl_meta(speaker_id, directory, test)
+    else:
+        print(f"Unknown data source: {data_source}. Exiting.")
+        sys.exit()
+
+    apply_exclusion_list(table, Path(config_dict['exclusion list']))
 
     # Only add the beep entry if we are going to be using it.
     if detect_beep:
         for entry in table:
             entry['beep'] = 'n/a' 
 
-    prompt_files = sorted(glob.glob(os.path.join(dirname, '*.txt'))) 
-
-    if(len(prompt_files) < 1):
-        print("Didn't find any prompt files.")
-        exit()
-    else:
-        # ensure one to one correspondence between wavs and prompts 
-        prompt_files = [os.path.join(dirname, filename) + '.txt'
-                       for filename in filenames]
-
-    exlusion_list = read_exclusion_list(Path(config_dict['exclusion list']))
-
-    outwave = outfilename + ".wav"
-    outcsv = outfilename + ".csv"
-    out_textgrid = outfilename + ".TextGrid"
-    
-    uti_files = [os.path.join(dirname, filename) + '.ult' 
-                 for filename in filenames]
+    outwave = outputfile + ".wav"
+    outcsv = outputfile + ".csv"
+    out_textgrid = outputfile + ".TextGrid"
     
     # find params from first file
-    samplerate, test_data = sio_wavfile.read(wav_files[0])
+    samplerate, test_data = sio_wavfile.read(table[0]['wav_path'])
     if len(test_data.shape) == 1:
         number_of_channels = 1
     else:
@@ -266,15 +235,15 @@ def concatenate_wavs(speaker_id, dirname, outfilename, config_dict,
 
     cursor = 0.0
     frames = None
-    for i in range(len(wav_files)):
+    for entry in table:
+        if entry['excluded']:
+            continue
         if detect_beep:
-            cursor, new_frames = process_wav_file(table[i], wav_files[i], filenames[i], 
-                    prompt_files[i], uti_files[i], 
-                    exlusion_list, samplerate, number_of_channels, cursor, filter=filter)
+            cursor, new_frames = process_wav_file(entry, samplerate, 
+                    number_of_channels, cursor, filter=filter)
         else:
-            cursor, new_frames = process_wav_file(table[i], wav_files[i], filenames[i], 
-                    prompt_files[i], uti_files[i], 
-                    exlusion_list, samplerate, number_of_channels, cursor)
+            cursor, new_frames = process_wav_file(entry, samplerate, 
+                    number_of_channels, cursor)
         if new_frames is None:
             continue
         if frames is None:
