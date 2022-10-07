@@ -1,23 +1,18 @@
-from contextlib import closing
-import glob
-import os
-from pathlib import Path
 import pprint
 import sys
+from contextlib import closing
+from pathlib import Path
 from typing import Tuple, Union
 
 import numpy as np
-
 # wav file handling
 import scipy.io.wavfile as sio_wavfile
-
 import textgrids
 
 import cast.audio_processing as audio_processing
-
+from cast.aaa_meta import check_and_load_aaa_meta
 from cast.config_file_io import read_exclusion_list
 from cast.csv_output import write_results
-from cast.aaa_meta import check_and_load_aaa_meta
 from cast.rasl_meta import check_and_load_rasl_meta
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -131,8 +126,8 @@ def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> 
     textgrid.write(filename)
 
 
-def process_wav_file(table_entry, samplerate, number_of_channels, cursor, 
-                    filter=None) -> Tuple[float, np.ndarray]:
+def process_wav_file(table_entry: dict, samplerate: float, number_of_channels: int, cursor: float, 
+                    filter: Union[dict[str, np.ndarray], None]=None) -> Tuple[float, np.ndarray]:
     (next_samplerate, frames) = sio_wavfile.read(table_entry['wav_path'])
     n_frames = frames.shape[0]
     if len(frames.shape) == 1:
@@ -164,12 +159,10 @@ def process_wav_file(table_entry, samplerate, number_of_channels, cursor,
     # from the recorded sound.
     if filter:
         beep, has_speech = audio_processing.detect_beep_and_speech(
-            frames, samplerate,filter['b'], filter['a'], table_entry['filename'])
+            frames, samplerate, filter['b'], filter['a'], table_entry['filename'])
         table_entry['beep'] = cursor + beep
         table_entry['has speech'] = has_speech
-
-    # Start segmentation in FAV and other systems after the beep.
-    if filter:
+        # Start segmentation in FAV and other systems after the beep.
         table_entry['begin'] = cursor + beep + 0.05
     else: 
         table_entry['begin'] = cursor
@@ -203,7 +196,7 @@ def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
 
 def concatenate_wavs(speaker_id: str, directory: Union[str, Path], 
                         outputfile: Union[str, Path], config_dict: dict, 
-                        pronunciation_dict: dict=None, 
+                        pronunciation_dict: Union[dict, None]=None, 
                         test: bool=False, detect_beep: bool=False, only_words: bool=False):
     if isinstance(directory, str):
         directory = Path(directory)

@@ -1,6 +1,7 @@
 from contextlib import closing
 from pathlib import Path
 
+
 def add_prompt_info(table: list) -> None:
     """
     Check for existence of prompts and add the prompt to table.
@@ -20,7 +21,8 @@ def add_prompt_info(table: list) -> None:
                 entry['prompt'] = prompt
 
 
-def check_and_load_aaa_meta(speaker_id: str, directory: Path, test: bool) -> list:
+def check_and_load_aaa_meta(speaker_id: str, directory: Path, 
+                            test: bool) -> list[dict]:
     # Since we are concerned with audio annotation, wav files 
     # determine the name list for all other files.
     wav_files = sorted(directory.glob('*.wav'))

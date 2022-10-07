@@ -33,25 +33,22 @@
 
 # Built in packages
 import logging
+from typing import Tuple
 
 # Numpy and scipy
 import numpy as np
 from scipy.signal import butter, filtfilt, kaiser, sosfilt
 
-
 _audio_logger = logging.getLogger('satkit.audio')
 
 
-def high_pass_50(sampling_frequency):
+def high_pass_50(sampling_frequency) -> dict[str, np.ndarray]:
     """Returns a high-pass filter with a 50Hz stop band. Used for
     filtering the mains frequency away from recorded sound."""
-    _audio_logger.debug("Generating high-pass filter.")
-    stop = (50/(sampling_frequency/2))  # 50 Hz stop band
-    b, a = butter(10, stop, 'highpass')
-    return(b, a)
+    return high_pass(sampling_frequency, 50)
 
 
-def high_pass(sampling_frequency, stop_band):
+def high_pass(sampling_frequency, stop_band) -> dict[str, np.ndarray]:
     """Returns a high-pass filter with a stop band of sb. Used for
     filtering the mains frequency away from recorded sound."""
     _audio_logger.debug("Generating high-pass filter.")
@@ -70,7 +67,8 @@ def band_pass(sampling_frequency):
     return(sos)
 
 
-def detect_beep_and_speech(frames, sampling_frequency, b, a, name):
+def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float, 
+                            b, a, name:str) -> Tuple[float, bool]:
     """
     Find a 1kHz 50ms beep at the beginning of a sound sample.
 
@@ -92,8 +90,8 @@ def detect_beep_and_speech(frames, sampling_frequency, b, a, name):
 1    """
 
     _audio_logger.debug(
-        "Detecting beep onset and presence of speech in {name}.",
-        name = name)
+        "Detecting beep onset and presence of speech in %s.",
+        name)
     hp_signal = filtfilt(b, a, frames)
     sos = band_pass(sampling_frequency)
     bp_signal = sosfilt(sos, frames)

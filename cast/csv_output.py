@@ -1,6 +1,6 @@
 
-from contextlib import closing
 import csv
+from contextlib import closing
 
 
 def write_fav_input(table, filename):

@@ -4,6 +4,7 @@ import time
 
 from cast import concatenate_wavs, read_config_file, read_pronunciation_dict
 
+
 def main(args):
     config_filename = None
     if args:
