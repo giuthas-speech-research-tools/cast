@@ -26,13 +26,14 @@ def check_and_load_aaa_meta(speaker_id: str, directory: Path,
     # Since we are concerned with audio annotation, wav files 
     # determine the name list for all other files.
     wav_files = sorted(directory.glob('*.wav'))
-    # for test runs do only first ten files:
-    if test:
-        wav_files = wav_files[:10]
-
     if(len(wav_files) < 1):
         print(f"Didn't find any sound files to concatanate in {directory}.")
         exit()
+
+    # for test runs do only first ten files:
+    if test and len(wav_files) >= 10:
+        wav_files = wav_files[:10]
+
 
     prompt_files = sorted(directory.glob('*.txt')) 
     if(len(prompt_files) < 1):
