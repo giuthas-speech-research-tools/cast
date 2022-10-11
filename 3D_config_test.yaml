@@ -37,7 +37,7 @@ exclusion list:
 
 # Consists of words followed by their segments in arbitrary transcription. 
 # When only words is True this can be omitted.
-pronunciation dictionary: 
+pronunciation dictionary: local_data/GFTA_phonemes_in_words_in_SAMPA.csv
 
 # Start and end points of the guess where the word or speech might 
 # be in normalised time. If beep detection is used the normalised
