@@ -19,6 +19,21 @@ a good deal less carpal tunnel strains because of reduced number of mouse
 clicks. And a significantly more relaxed feel about the segmentation process in
 general.
 
+## Installation
+
+Following steps should lead to a working installation. Please, let me know if
+anything doesn't work. I have only very superficially tested installation on Linux.
+
+- Get Python 10 or newer.
+- Get Conda and Mamba.
+- Either:
+  - Get git and clone the repository to your local system or
+  - download the repository.
+- Create the virtual environment for CAST with
+  `mamba create -f cast_stable_conda_env.yaml` and activate it with
+  `conda activate cast_stable`.
+- If everything worked, you can run cast by calling `python cast.py [config file]`.
+
 ## Files and directories
 
 - cast/ is the directory that contains most of the processing logic.
