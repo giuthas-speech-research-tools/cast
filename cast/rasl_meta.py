@@ -4,6 +4,14 @@ from pathlib import Path, PureWindowsPath
 
 import scipy.io
 
+from rasl_dat_to_wav import dat_to_wav
+
+
+def convert_dats_to_wav(table: dict) -> None:
+    print(f"Looking for DAT files and trying to convert them to WAV.")
+    for entry in table:
+        dat_to_wav(entry['dat_path'], entry['wav_path'])
+
 
 def check_and_load_rasl_meta(speaker_id: str, directory: Path, 
                             test: bool) -> list[dict]:
@@ -38,8 +46,9 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
             meta_token = {
                 'excluded': False,
                 'trial_number': element[0],
-                'dat_filename': dat_path.name,
                 'filename': dat_path.stem,
+                'dat_filename': dat_path.name,
+                'dat_path': dat_path,
                 'wav_path': (wav_dir/dat_path.stem).with_suffix('.wav'),
                 'id':dat_path.stem,
                 'speaker':speaker_id, 
@@ -53,8 +62,10 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
 
     wav_files = sorted(wav_dir.glob('*.wav'))
     if(len(wav_files) < 1):
-        print(f"Didn't find any sound files to concatanate in {directory} and I can't yet generate wavs from dats.")
-        exit()
+        print(f"Didn't find any sound files to concatanate in {directory}.")
+        if not wav_dir.is_dir():
+            wav_dir.mkdir()
+        convert_dats_to_wav(table)
 
     # for test runs do only first ten files:
     if test and len(table) >= 10:
