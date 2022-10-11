@@ -4,7 +4,7 @@ from pathlib import Path, PureWindowsPath
 
 import scipy.io
 
-from rasl_dat_to_wav import dat_to_wav
+from cast.rasl_dat_to_wav import dat_to_wav
 
 
 def convert_dats_to_wav(table: dict) -> None:
