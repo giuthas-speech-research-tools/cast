@@ -1,11 +1,12 @@
 
-from contextlib import closing
 import csv
-from pathlib import Path
 import sys
+from contextlib import closing
+from pathlib import Path
 from typing import Union
 
-from strictyaml import load, Map, Str, Float, Bool, YAMLError
+from strictyaml import Bool, Float, Map, Str, YAMLError, load
+
 
 def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
     """
@@ -59,11 +60,12 @@ def read_exclusion_list(filepath: Path) -> dict:
     """
     if filepath.is_file():
         with closing(open(filepath, 'r')) as yaml_file:
-            exclusion_dict = load(yaml_file.read())
+            yaml = load(yaml_file.read())
+            exclusion_dict = yaml.data
     else:
         exclusion_dict = {}
         print(f"Did not find the exclusion list at {filepath}. Proceeding anyhow.")
-    return exclusion_dict.data
+    return exclusion_dict
 
 
 def read_na_list(dirpath: Path) -> list[str]:

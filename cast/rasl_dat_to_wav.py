@@ -19,7 +19,6 @@ def dat_to_wav(datpath: Path, wavpath: Path):
         numberOfChannels = np.median(
             np.diff(np.nonzero(np.abs(diffData) < threshold)))
         numberOfChannels = int(numberOfChannels)
-        print(numberOfChannels)
         if len(data) % numberOfChannels == 0:
             data.shape = [int(len(data)/numberOfChannels), 
                             numberOfChannels]
@@ -57,3 +56,4 @@ def dat_to_wav(datpath: Path, wavpath: Path):
 
         with closing(open(wavpath, 'wb')) as wav_file:
             sio_wavfile.write(wav_file, sampling_rate, sound)
+            print(f"Wrote a new wav {wavpath}.")

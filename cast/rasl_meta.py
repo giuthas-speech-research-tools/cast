@@ -1,5 +1,5 @@
 
-import datetime
+from datetime import datetime
 from pathlib import Path, PureWindowsPath
 
 import scipy.io
@@ -10,8 +10,11 @@ from cast.rasl_dat_to_wav import dat_to_wav
 def convert_dats_to_wav(table: dict) -> None:
     print(f"Looking for DAT files and trying to convert them to WAV.")
     for entry in table:
-        dat_to_wav(entry['dat_path'], entry['wav_path'])
-
+        if entry['dat_path'].is_file():
+            dat_to_wav(entry['dat_path'], entry['wav_path'])
+        else:
+            print(f"Dat file {entry['dat_path']} does not exist. Skipping.")
+            continue
 
 def check_and_load_rasl_meta(speaker_id: str, directory: Path, 
                             test: bool) -> list[dict]:
@@ -20,7 +23,7 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
     """
     wav_dir = directory / "WAV"
     note_dir = directory / "NOTES"
-    mat_file = note_dir / 'officialNotes*.mat'
+    mat_file = sorted(note_dir.glob('officialNotes*.mat'))[0]
  
     mat = scipy.io.loadmat(str(mat_file), squeeze_me=True)
     table = []
@@ -37,11 +40,17 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
             try:
                 date_and_time = datetime.strptime(
                     element[4], "%d-%b-%Y %H:%M:%S")
-                dat_path = PureWindowsPath(element[5])
+                dat_name = PureWindowsPath(element[5])
             except ValueError:
-                dat_path = PureWindowsPath(element[4])
+                dat_name = PureWindowsPath(element[4])
                 date_and_time = datetime.strptime(
                     element[5], "%d-%b-%Y %H:%M:%S")
+
+            dat_name = dat_name.name
+            dat_path = directory/"DAT"/dat_name
+            dat_path = dat_path.with_suffix('.dat')
+
+            wav_path = (wav_dir/dat_path.stem).with_suffix('.wav')
 
             meta_token = {
                 'excluded': False,
@@ -49,7 +58,7 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
                 'filename': dat_path.stem,
                 'dat_filename': dat_path.name,
                 'dat_path': dat_path,
-                'wav_path': (wav_dir/dat_path.stem).with_suffix('.wav'),
+                'wav_path': wav_path,
                 'id':dat_path.stem,
                 'speaker':speaker_id, 
                 'sliceBegin':'n/a',

@@ -176,6 +176,9 @@ def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
 
     exclusion_list = read_exclusion_list(exclusion_path)
 
+    if not exclusion_list:
+        return
+
     for entry in table:
         filename = entry['filename']
         if filename in exclusion_list['files']:
