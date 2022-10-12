@@ -15,7 +15,7 @@ equal length within a given word.
 
 CAST *does* do the writing and boundary creation for you. No need to go back and
 correct typos in the transcription -- at least on the phonological level -- and
-a good deal less carpal tunnel strains because of reduced number of mouse
+a good deal less carpal tunnel strain because of reduced number of mouse
 clicks. And a significantly more relaxed feel about the segmentation process in
 general.
 
