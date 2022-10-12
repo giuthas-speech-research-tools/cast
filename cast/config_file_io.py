@@ -30,8 +30,10 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
                 "flags": Map({
                     "detect beep": Bool(),
                     "only words": Bool(),
-                    "test": Bool()
-                    }), 
+                    "test": Bool(),
+                    "file": Bool(),
+                    "utterance": Bool()
+                    }),
                 "exclusion list": Str(), 
                 "pronunciation dictionary": Str(), 
                 "word guess": Map({

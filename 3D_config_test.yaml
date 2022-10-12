@@ -28,6 +28,8 @@ outputfilename: local_data/rasl_test
 
 flags:
   detect beep: False # Should onset beep detection be run?
+  utterance: False # Add Utterance Tier.
+  file: True # Add File Tier.
   only words: True # Add only Utterance and Word Tiers.
   test: True # Run on only the first 10 recordings.
 

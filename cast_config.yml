@@ -11,6 +11,8 @@ outputfilename: local_data/gam-1-2-test
 flags:
   detect beep: True # Should onset beep detection be run?
   only words: False # Add only Utterance and Word Tiers.
+  utterance: True # Add Utterance Tier.
+  file: True # Add File Tier.
   test: True # Run on only the first 10 recordings.
 
 # Strict YAML file specifying recordings to be excluded based 
