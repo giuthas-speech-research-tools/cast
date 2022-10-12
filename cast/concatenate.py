@@ -125,9 +125,9 @@ def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> 
     # Construct a 'Segment' Tier from the .csv and write it out
     # Copy the 'Segment' as 'Phonetic detail' or some such as well.
     # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
-    if config_dict['file']:
+    if config_dict['flags']['file']:
         textgrid.interval_tier_from_array("File", files)
-    if config_dict['utterance']:
+    if config_dict['flags']['utterance']:
         textgrid.interval_tier_from_array("Utterance", words)
     textgrid.interval_tier_from_array("Word", words)
     if pronunciation_dict:

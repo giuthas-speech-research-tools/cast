@@ -45,5 +45,5 @@ pronunciation dictionary: local_data/GFTA_phonemes_in_words_in_SAMPA.csv
 # be in normalised time. If beep detection is used the normalised
 # period runs from end of beep to end of recording.
 word guess:
-  begin: 0.8
-  end: 0.9
+  begin: 0.2
+  end: 0.3
