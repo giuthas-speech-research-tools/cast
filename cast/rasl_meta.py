@@ -1,4 +1,4 @@
-
+import sys
 from datetime import datetime
 from pathlib import Path, PureWindowsPath
 
@@ -22,8 +22,19 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
     Read a RASL .mat file and return relevant contents as a dict.
     """
     wav_dir = directory / "WAV"
+
     note_dir = directory / "NOTES"
-    mat_file = sorted(note_dir.glob('officialNotes*.mat'))[0]
+    if not note_dir.is_dir():
+        note_dir = directory / "Notes"
+    if not note_dir.is_dir():
+        print(f"Notes dir {note_dir} does not exist. Exiting.")
+        sys.exit()
+
+    possible_notes = sorted(note_dir.glob('officialNotes*.mat'))
+    if not possible_notes:
+        print(f"Found no notes in {note_dir}. Exiting.")
+        sys.exit()
+    mat_file = possible_notes[0]
  
     mat = scipy.io.loadmat(str(mat_file), squeeze_me=True)
     table = []
