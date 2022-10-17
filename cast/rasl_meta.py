@@ -27,6 +27,8 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
     if not note_dir.is_dir():
         note_dir = directory / "Notes"
     if not note_dir.is_dir():
+        note_dir = directory / "notes"
+    if not note_dir.is_dir():
         print(f"Notes dir {note_dir} does not exist. Exiting.")
         sys.exit()
 
@@ -37,6 +39,10 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
     mat_file = possible_notes[0]
  
     mat = scipy.io.loadmat(str(mat_file), squeeze_me=True)
+    if not mat:
+        print(f"Official notes at {mat_file} seems to be empty. Exiting.")
+        sys.exit()
+
     table = []
     for element in mat['officialNotes']:
         # Apparently squeeze_me=True is a bit too strident and
