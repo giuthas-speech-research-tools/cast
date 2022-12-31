@@ -2,12 +2,17 @@
 import sys
 import time
 
-from cast import concatenate_wavs, read_config_file, read_pronunciation_dict
+from cast import (concatenate_wavs, extract_textgrids, read_config_file,
+                  read_pronunciation_dict)
 
 
 def main(args):
+    command = None
     config_filename = None
-    if args:
+    if args and args[1] in ('concatenate', 'extract'):
+        command = args[1]
+        config_filename = args[2]
+    elif args:
         config_filename = args.pop()
     config_dict = read_config_file(config_filename)
 
@@ -18,18 +23,23 @@ def main(args):
     detect_beep = config_dict['flags']['detect beep']
     test = config_dict['flags']['test']
 
-    if not config_dict['flags']['only words']:
-        pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation dictionary'])
-        concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
-            pronunciation_dict=pronunciation_dict, test=test, detect_beep=detect_beep)
+    if not command or command == 'concatenate':
+        if not config_dict['flags']['only words']:
+            pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation dictionary'])
+            concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
+                pronunciation_dict=pronunciation_dict, test=test, detect_beep=detect_beep)
+        else:
+            concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
+                test=test, detect_beep=detect_beep)
     else:
-        concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
-            test=test, detect_beep=detect_beep)
+        extract_textgrids()
 
 
-if (len(sys.argv) not in [1,2]):
+if (len(sys.argv) not in [1,2,3]):
     print("\ncast.py")
-    print("\tusage: cast.py [config strict yaml file]")
+    print("\tusage: cast.py [config-yaml-file]")
+    print("\tusage: cast.py concatenate [config-yaml-file]")
+    print("\tusage: cast.py extract [config-yaml-file]")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
     print("\tWrites a huge wav-file, a corresponding textgrid, and")
     print("\ta metafile to assist in extracting shorter textgrid after annotation.")
