@@ -10,13 +10,13 @@ import textgrids
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def read_results(results_file: Path):
+def read_results_csv(results_file: Path):
     # Read data written by ex2_concat.py from a csv-formated file.
     with closing(open(results_file, 'r')) as csvfile:
         reader = csv.DictReader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
         table = [row for row in reader]
 
-    print("Read file " + results_file + ".")
+    print("Read file " + str(results_file) + ".")
     return table
 
 
@@ -57,7 +57,7 @@ def extract_grids(table, long_grid, directory):
 
         textgrid.offset_time(-entry["sliceBegin"])
 
-        filename = Path(directory, entry['id']).with_suffix('.TextGrid')
+        filename = (directory/entry['id']).with_suffix('.TextGrid')
         textgrid.write(filename)
         i += 1
 
@@ -66,11 +66,13 @@ def extract_grids(table, long_grid, directory):
 
 def extract_textgrids(
         outdirectory: Path, 
-        results_file: Path,
-        grid_file: Path
+        results: Path,
     ):
 
-    table = read_results(results_file)
+    results_csv = results.with_suffix('.csv')
+    grid_file = results.with_suffix('.TextGrid')
+
+    table = read_results_csv(results_csv)
 
     long_grid = textgrids.TextGrid(grid_file)
     print(f"Read {grid_file}.")

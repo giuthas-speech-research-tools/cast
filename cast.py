@@ -1,6 +1,7 @@
 
 import sys
 import time
+from pathlib import Path
 
 from cast import (concatenate_wavs, extract_textgrids, read_config_file,
                   read_pronunciation_dict)
@@ -9,10 +10,12 @@ from cast import (concatenate_wavs, extract_textgrids, read_config_file,
 def main(args):
     command = None
     config_filename = None
-    if args and args[1] in ('concatenate', 'extract'):
-        command = args[1]
-        config_filename = args[2]
+    if args and args[0] in ('concatenate', 'extract'):
+        command = args[0]
+        config_filename = args[1]
     elif args:
+        print(args)
+        command = 'concatenate'
         config_filename = args.pop()
     config_dict = read_config_file(config_filename)
 
@@ -23,7 +26,7 @@ def main(args):
     detect_beep = config_dict['flags']['detect beep']
     test = config_dict['flags']['test']
 
-    if not command or command == 'concatenate':
+    if command == 'concatenate':
         if not config_dict['flags']['only words']:
             pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation dictionary'])
             concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
@@ -32,7 +35,7 @@ def main(args):
             concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
                 test=test, detect_beep=detect_beep)
     else:
-        extract_textgrids()
+        extract_textgrids(Path(original_dirname), Path(outfilename))
 
 
 if (len(sys.argv) not in [1,2,3]):
