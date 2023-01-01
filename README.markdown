@@ -57,3 +57,27 @@ CAST is written in Python with some external packages and configuration/setting
 files in StrictYAML. Some of the code base (particularly ) is shared with SATKIT
 and there is a possibility that CAST will become a submodule in SATKIT or that
 there will be some other kind of integration to avoid code duplication.
+
+## Running
+
+First, create a config `.yaml` file with the correct options. There are some
+examples included with CAST.
+
+### Concatenation
+
+To concatenate, run either `python cast.py config.yaml` or `python cast.py
+concatenate config.yaml`.
+
+DEPRACATION NOTICE: The default status of the concatenate command should already
+be considered depracated. In future, CAST will most likely be integrated into
+SATKIT and the default will be to create the individual TextGrids directly with
+pre-generated (dumb) segmentation. This is because SATKIT makes it easy to edit
+a lot of individual recordings without needing to do the 'select objects - open
+for editing - edit - save - close window - start again with select object' dance
+that Praat requires.
+
+### Extraction
+
+To extract run `python cast.py extract config.yaml`.
+
+NOTE! Any existing TextGrids will currently be overwritten without warning.
