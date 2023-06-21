@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from cast import (concatenate_wavs, extract_textgrids, read_config_file,
-                  read_pronunciation_dict)
+                  read_pronunciation_dict, remove_empty_intervals_from_textgrids)
 
 
 def main(args):
@@ -34,6 +34,10 @@ def main(args):
         else:
             concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
                 test=test, detect_beep=detect_beep)
+    elif command == 'remove-double-word-boundaries':
+        if not config_dict['output_dirname']:
+            print('Fatal: No output directory for new textgrids specified in ' + config_filename + '.')
+        remove_empty_intervals_from_textgrids(Path(original_dirname), Path(config_dict['output_dirname']))
     else:
         extract_textgrids(Path(original_dirname), Path(outfilename))
 
@@ -43,6 +47,7 @@ if (len(sys.argv) not in [1,2,3]):
     print("\tusage: cast.py [config-yaml-file]")
     print("\tusage: cast.py concatenate [config-yaml-file]")
     print("\tusage: cast.py extract [config-yaml-file]")
+    print("\tusage: cast.py remove-double-word-boundaries [config-yaml-file]")
     print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
     print("\tWrites a huge wav-file, a corresponding textgrid, and")
     print("\ta metafile to assist in extracting shorter textgrid after annotation.")
