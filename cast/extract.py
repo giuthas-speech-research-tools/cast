@@ -88,7 +88,7 @@ def extract_textgrids(
     in outdirectory. 
     
     NOTE! Any existing TextGrids in outdirectory will be overwritten
-    without confirmation
+    without confirmation.
     """
 
     results_csv = results.with_suffix('.csv')

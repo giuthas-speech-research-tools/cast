@@ -64,6 +64,7 @@ def remove_empty_intervals_from_grid(
     output_path = output_dir/original_gridfile.name
     grid.write(output_path)
 
+
 # TODO: change this into a generic filtering function which takes a list of
 # filters to apply to each texgrid. 
 def remove_empty_intervals_from_textgrids(
