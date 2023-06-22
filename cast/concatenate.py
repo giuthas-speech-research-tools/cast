@@ -221,6 +221,9 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
         table = check_and_load_aaa_meta(speaker_id, directory, test)
     elif data_source == 'RASL':
         table = check_and_load_rasl_meta(speaker_id, directory, test)
+    elif data_source == 'csv':
+        pass
+        #table = check_and_load_csv_meta(speaker_id, directory, test)
     else:
         print(f"Unknown data source: {data_source}. Exiting.")
         sys.exit()

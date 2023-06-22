@@ -5,7 +5,7 @@ from contextlib import closing
 from pathlib import Path
 from typing import Union
 
-from strictyaml import Bool, Float, Map, Str, YAMLError, load
+from strictyaml import Bool, Float, Map, Optional, Str, YAMLError, load
 
 
 def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
@@ -27,6 +27,7 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
                 "speaker id": Str(), 
                 "data directory": Str(), 
                 "outputfilename": Str(), 
+                Optional("output_dirname"): Str(), 
                 "flags": Map({
                     "detect beep": Bool(),
                     "only words": Bool(),

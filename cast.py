@@ -4,17 +4,18 @@ import time
 from pathlib import Path
 
 from cast import (concatenate_wavs, extract_textgrids, read_config_file,
-                  read_pronunciation_dict, remove_empty_intervals_from_textgrids)
+                  read_pronunciation_dict,
+                  remove_empty_intervals_from_textgrids)
 
 
 def main(args):
     command = None
     config_filename = None
-    if args and args[0] in ('concatenate', 'extract'):
+    if args and args[0] in ('concatenate', 'extract', 'remove-double-word-boundaries'):
         command = args[0]
         config_filename = args[1]
     elif args:
-        print(args)
+        print("Did not find a command in the arguments: " + args + " Concatenating.")
         command = 'concatenate'
         config_filename = args.pop()
     config_dict = read_config_file(config_filename)
@@ -42,7 +43,7 @@ def main(args):
         extract_textgrids(Path(original_dirname), Path(outfilename))
 
 
-if (len(sys.argv) not in [1,2,3]):
+if (len(sys.argv) not in [1,2,3] or '-h' in sys.argv):
     print("\ncast.py")
     print("\tusage: cast.py [config-yaml-file]")
     print("\tusage: cast.py concatenate [config-yaml-file]")

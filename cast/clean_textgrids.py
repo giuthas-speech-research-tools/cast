@@ -55,12 +55,12 @@ def remove_empty_intervals_from_grid(
     grid = TextGrid(original_gridfile)
     for tier in grid:
         deletion_list =  []
-        for i, segment in enumerate(tier[1:-1]):
-            if not segment.label:
+        for i, interval in enumerate(grid[tier][1:-1]):
+            if not interval.text:
                 deletion_list.append(i+1)
         deletion_list.reverse()
         for i in deletion_list:
-            delete_interval(tier, i)
+            delete_interval(grid[tier], i)
     output_path = output_dir/original_gridfile.name
     grid.write(output_path)
 
