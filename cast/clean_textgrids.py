@@ -32,7 +32,7 @@ def remove_empty_intervals_from_grid(
     """
     Delete all empty Intervals (excpet first and last) in every Tier.
 
-    Any empty segments apart from the first and last Interval of each get
+    Any empty segments apart from the first and last Interval of each Tier get
     deleted by extending the previous Interval to cover the deleted Interval's
     time span.
 
