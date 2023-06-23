@@ -11,7 +11,7 @@ from cast import (concatenate_wavs, extract_textgrids, read_config_file,
 def main(args):
     command = None
     config_filename = None
-    if args and args[0] in ('concatenate', 'extract', 'remove-double-word-boundaries'):
+    if args and args[0] in ('add', 'concatenate', 'extract', 'remove-double-word-boundaries'):
         command = args[0]
         config_filename = args[1]
     elif args:
@@ -27,7 +27,12 @@ def main(args):
     detect_beep = config_dict['flags']['detect beep']
     test = config_dict['flags']['test']
 
-    if command == 'concatenate':
+    if command == 'add':
+        if not config_dict['flags']['only words']:
+            pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation dictionary'])
+            add_tiers(speaker_id, original_dirname, outfilename, config_dict, 
+                pronunciation_dict=pronunciation_dict, test=test, detect_beep=detect_beep)
+    elif command == 'concatenate':
         if not config_dict['flags']['only words']:
             pronunciation_dict = read_pronunciation_dict(config_dict['pronunciation dictionary'])
             concatenate_wavs(speaker_id, original_dirname, outfilename, config_dict, 
@@ -46,6 +51,7 @@ def main(args):
 if (len(sys.argv) not in [1,2,3] or '-h' in sys.argv):
     print("\ncast.py")
     print("\tusage: cast.py [config-yaml-file]")
+    print("\tusage: cast.py add [config-yaml-file]")
     print("\tusage: cast.py concatenate [config-yaml-file]")
     print("\tusage: cast.py extract [config-yaml-file]")
     print("\tusage: cast.py remove-double-word-boundaries [config-yaml-file]")
