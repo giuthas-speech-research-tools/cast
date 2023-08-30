@@ -7,4 +7,4 @@ from .csv_meta import check_and_load_csv_meta
 from .csv_output import write_results
 from .extract import extract_textgrids
 from .rasl_meta import check_and_load_rasl_meta
-from .textgrid_functions import add_boundaries_and_segments, generate_textgrid
+from .textgrid_functions import generate_boundaries_and_segments, generate_textgrid

@@ -9,9 +9,20 @@ import textgrids
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def add_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> None:
+# def add_boundaries_and_segments:
+
+
+def generate_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> None:
     begin_coeff = config_dict['word guess']['begin']
     end_coeff = config_dict['word guess']['end']
+
+    if config_dict['flags']['utterance'] or config_dict['flags']['word']:
+        textgrid.interval_tier_from_array(config_dict['tier names']['word'], words)
+    if config_dict['flags']['phoneme']:
+        textgrid.interval_tier_from_array(config_dict['tier names']['phoneme'], segments)
+    if config_dict['flags']['phone']:
+        textgrid.interval_tier_from_array(config_dict['tier names']['phone'], segments)
+
     for entry in table:
         if pronunciation_dict:
             if entry['prompt'] in pronunciation_dict:
@@ -41,7 +52,7 @@ def add_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> 
 
 def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> None:
 
-    add_boundaries_and_segments(table, config_dict, pronunciation_dict)
+    generate_boundaries_and_segments(table, config_dict, pronunciation_dict)
 
     textgrid = textgrids.TextGrid()
     files = []
@@ -120,9 +131,11 @@ def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> 
     if config_dict['flags']['file']:
         textgrid.interval_tier_from_array("File", files)
     if config_dict['flags']['utterance']:
-        textgrid.interval_tier_from_array("Utterance", words)
-    textgrid.interval_tier_from_array("Word", words)
-    if pronunciation_dict:
-        textgrid.interval_tier_from_array("Phoneme", segments)
-        textgrid.interval_tier_from_array("Phone", segments)
+        textgrid.interval_tier_from_array(config_dict['tier names']['utterance'], words)
+    if config_dict['flags']['word']:
+        textgrid.interval_tier_from_array(config_dict['tier names']['word'], words)
+    if config_dict['flags']['phoneme']:
+        textgrid.interval_tier_from_array(config_dict['tier names']['phoneme'], segments)
+    if config_dict['flags']['phone']:
+        textgrid.interval_tier_from_array(config_dict['tier names']['phone'], segments)
     textgrid.write(filename)

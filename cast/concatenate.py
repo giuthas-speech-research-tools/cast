@@ -2,15 +2,16 @@ import pprint
 import sys
 from contextlib import closing
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 # wav file handling
 import scipy.io.wavfile as sio_wavfile
 
 import cast.audio_processing as audio_processing
-from cast import (check_and_load_aaa_meta, check_and_load_rasl_meta,
-                  generate_textgrid, read_exclusion_list, write_results)
+from cast import (check_and_load_aaa_meta, check_and_load_csv_meta,
+                  check_and_load_rasl_meta, generate_textgrid,
+                  read_exclusion_list, write_results)
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -88,7 +89,8 @@ def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
 def concatenate_wavs(speaker_id: str, directory: Union[str, Path], 
                         outputfile: Union[str, Path], config_dict: dict, 
                         pronunciation_dict: Union[dict, None]=None, 
-                        test: bool=False, detect_beep: bool=False, only_words: bool=False):
+                        test: bool=False, detect_beep: bool=False, only_words: bool=False, 
+                        csv_meta_file: Optional[Path]=None):
     if isinstance(directory, str):
         directory = Path(directory)
     if isinstance(outputfile, str):
@@ -100,8 +102,7 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
     elif data_source == 'RASL':
         table = check_and_load_rasl_meta(speaker_id, directory, test)
     elif data_source == 'csv':
-        pass
-        #table = check_and_load_csv_meta(speaker_id, directory, test)
+        table = check_and_load_csv_meta(speaker_id, directory, test, csv_meta_file)
     else:
         print(f"Unknown data source: {data_source}. Exiting.")
         sys.exit()
