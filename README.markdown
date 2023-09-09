@@ -19,6 +19,31 @@ a good deal less carpal tunnel strain because of reduced number of mouse
 clicks. And a significantly more relaxed feel about the segmentation process in
 general.
 
+## Roadmap to 1.0
+
+CAST is going to be re-organised a bit in the very near future (during September
+2023 if nothing weird happens). Version 1.0 will include:
+
+- Four commandline commands:
+  - `add` which add Tiers to TextGrids up to the specified level (see below).
+    `add` will also generete the TextGrids if they do not already exist.
+    - The Tier levels will be L0=[File], L1=[Utterance], L2=Word, L3=Phonemes,
+      L4=Phones. Levels whose names are in brackets can be turned off as a
+      configuration option. All preceding levels (that haven't been turned off)
+      above the requested level will be added to the TextGrid. The File level is
+      turned off by default when not running `concatenate`. All levels maybe
+      renamed as a configuration option.
+  - `concatenate` produces a concatenated wav file and corresponding TextGrid
+    for working on multiple recordings in Praat.
+  - `extract` extracts TextGrids corresponding to individual recordings from a
+    previously concatenated set of recordings.
+  - `remove-double-word-boundaries` cleans up extra word boundaries from
+    TextGrids -- i.e. empty space between words.
+- Configuration file for project specific settings like Tier names, if an
+  utterance level should be included, and a bunch of other things.
+- An update to this README, possibly with easier installation.
+- Documentation.
+
 ## Installation
 
 Following steps should lead to a working installation. Please, let me know if
