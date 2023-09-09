@@ -2,17 +2,31 @@ import pprint
 import sys
 from contextlib import closing
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
-import textgrids
+from textgrids import TextGrid
 
 pp = pprint.PrettyPrinter(indent=4)
 
 # def add_boundaries_and_segments:
 
 
-def generate_boundaries_and_segments(table, config_dict, pronunciation_dict=None) -> None:
+def add_tiers(textgrid: TextGrid, table: List, config_dict: Dict, pronunciation_dict: Dict=None) -> None:
+    """
+    Add Tiers to a TextGrid
+
+    Parameters
+    ----------
+    textgrid : TextGrid
+        The Tiers will be added to this TextGrid
+    table : List
+        _description_
+    config_dict : Dict
+        Configuration dictionary
+    pronunciation_dict : Dict, optional
+        Pronunciation dictionary -- not needed if only generating to the word level, by default None
+    """
     begin_coeff = config_dict['word guess']['begin']
     end_coeff = config_dict['word guess']['end']
 
@@ -52,9 +66,9 @@ def generate_boundaries_and_segments(table, config_dict, pronunciation_dict=None
 
 def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> None:
 
-    generate_boundaries_and_segments(table, config_dict, pronunciation_dict)
+    textgrid = TextGrid()
+    add_tiers(textgrid, table, config_dict, pronunciation_dict)
 
-    textgrid = textgrids.TextGrid()
     files = []
     words = []
     segments = []
