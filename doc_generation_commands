@@ -1,0 +1,6 @@
+# Generate docs with pdoc ...
+pdoc -o docs cast
+
+# and some diagrams to be linked as well.
+# Needs Graphviz to work properly
+pyreverse -o png -p cast -d docs cast

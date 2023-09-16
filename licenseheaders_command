@@ -1,0 +1,1 @@
+python -m licenseheaders -t gpl-v3_and_CC-BY-NC-SA.tmpl -y 2022-2023 -o "Pertti Palo" -n "Computer Assisted Segmentation Tools" -u https://github.com/giuthas-speech-research-tools/cast/  --exclude *.html -v -v -v
