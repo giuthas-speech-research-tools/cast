@@ -1,10 +1,8 @@
-# This file is copied from SATKIT for convenience before integrating SIWORTKIT
-# either with or into SATKIT.
 #
-# Copyright (c) 2019-2022 Pertti Palo, Scott Moisik, Matthew Faytak, and Motoki Saito.
+# Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Speech Articulation ToolKIT
-# (see https://github.com/giuthas/satkit/).
+# This file is part of Computer Assisted Segmentation Tools 
+# (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
