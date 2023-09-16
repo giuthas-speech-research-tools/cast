@@ -1,4 +1,12 @@
+"""
+config_file_io handles reading configuration files.
 
+File types handled by this module are strict yaml config files, different types
+of exclusion lists, and pronunciation dictionaries.
+
+A possible future addition is handling also the saving of strict yaml config
+files.
+"""
 import csv
 import sys
 from contextlib import closing
@@ -21,7 +29,7 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
         filepath = Path(filepath)
 
     if filepath.is_file():
-        with closing(open(filepath, 'r')) as yaml_file:
+        with closing(open(filepath, 'r', encoding="utf-8")) as yaml_file:
             schema = Map({
                 "data source": Str(), 
                 "speaker id": Str(), 
@@ -73,7 +81,7 @@ def read_exclusion_list(filepath: Path) -> dict:
     after warning the user.
     """
     if filepath.is_file():
-        with closing(open(filepath, 'r')) as yaml_file:
+        with closing(open(filepath, 'r', encoding="utf-8")) as yaml_file:
             yaml = load(yaml_file.read())
             exclusion_dict = yaml.data
     else:
@@ -91,7 +99,7 @@ def read_na_list(dirpath: Path) -> list[str]:
     """
     na_file = dirpath.joinpath('na_list.txt')
     if na_file.is_file():
-        na_list = [line.rstrip('\n') for line in open(na_file)]
+        na_list = [line.rstrip('\n') for line in open(na_file, encoding="utf-8")]
     else:
         na_list = []
         print("Didn't find na_list.txt. Proceeding anyhow.")
@@ -113,7 +121,7 @@ def read_pronunciation_dict(filepath: Union[Path, str]) -> dict:
 
     pronunciation_dict = {}
     if filepath.is_file():
-        with closing(open(filepath, 'r')) as csvfile:
+        with closing(open(filepath, 'r', encoding="utf-8")) as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             pronunciation_dict = {row[0]: list(filter(None, row[1:])) 
                                     for row in reader}
