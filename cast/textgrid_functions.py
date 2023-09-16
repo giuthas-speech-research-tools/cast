@@ -1,8 +1,8 @@
+"""
+textgrid_functions contains functions for generating and modifying TextGrid objects.
+"""
 import pprint
-import sys
-from contextlib import closing
-from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List
 
 import numpy as np
 from textgrids import TextGrid
@@ -11,7 +11,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 # def add_boundaries_and_segments:
 
-
+# TODO: chop the rewrite to pieces. try starting with the config file and the pseudocode
 def add_tiers(textgrid: TextGrid, table: List, config_dict: Dict, pronunciation_dict: Dict=None) -> None:
     """
     Add Tiers to a TextGrid
@@ -65,6 +65,20 @@ def add_tiers(textgrid: TextGrid, table: List, config_dict: Dict, pronunciation_
 
 
 def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> None:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    table : _type_
+        _description_
+    filename : _type_
+        _description_
+    config_dict : _type_
+        _description_
+    pronunciation_dict : _type_, optional
+        _description_, by default None
+    """
 
     textgrid = TextGrid()
     add_tiers(textgrid, table, config_dict, pronunciation_dict)
