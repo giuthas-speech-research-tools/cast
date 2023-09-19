@@ -46,7 +46,7 @@ from cast import (check_and_load_aaa_meta, check_and_load_csv_meta,
 pp = pprint.PrettyPrinter(indent=4)
 
 def process_wav_file(table_entry: dict, samplerate: float, number_of_channels: int, cursor: float, 
-                    filter: Union[dict[str, np.ndarray], None]=None) -> Tuple[float, np.ndarray]:
+                    high_pass_filter: Union[dict[str, np.ndarray], None]=None) -> Tuple[float, np.ndarray]:
     (next_samplerate, frames) = sio_wavfile.read(table_entry['wav_path'])
     n_frames = frames.shape[0]
     if len(frames.shape) == 1:
@@ -76,9 +76,9 @@ def process_wav_file(table_entry: dict, samplerate: float, number_of_channels: i
 
     # setup the high-pass filter for removing the mains frequency (and anything below it)
     # from the recorded sound.
-    if filter:
+    if high_pass_filter:
         beep, has_speech = audio_processing.detect_beep_and_speech(
-            frames, samplerate, filter['b'], filter['a'], table_entry['filename'])
+            frames, samplerate, high_pass_filter['b'], high_pass_filter['a'], table_entry['filename'])
         table_entry['beep'] = cursor + beep
         table_entry['has speech'] = has_speech
         # Start segmentation in FAV and other systems after the beep.
@@ -158,8 +158,8 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
     # Read wavs and keep track of file boundaries.
     # TODO: consider moving the whole loop into processWavFile and renaming the function
     if detect_beep:
-        mainsFrequency = 60
-        filter = audio_processing.high_pass(samplerate, mainsFrequency)
+        mains_frequency = 60
+        high_pass_filter = audio_processing.high_pass(samplerate, mains_frequency)
 
     cursor = 0.0
     frames = None
@@ -168,7 +168,7 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
             continue
         if detect_beep:
             cursor, new_frames = process_wav_file(entry, samplerate, 
-                    number_of_channels, cursor, filter=filter)
+                    number_of_channels, cursor, high_pass_filter=high_pass_filter)
         else:
             cursor, new_frames = process_wav_file(entry, samplerate, 
                     number_of_channels, cursor)
