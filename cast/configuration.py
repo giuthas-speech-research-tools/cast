@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -46,10 +46,10 @@ from typing import Union
 from strictyaml import Bool, Float, Map, Optional, Str, YAMLError, load
 
 
-def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
+def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
     """
     Read the config file from filepath.
-    
+
     If filepath is None, read from the default file 'cast_config.yml'.
     In both cases if the file does not exist, report this and exit.
     """
@@ -61,36 +61,36 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
     if filepath.is_file():
         with closing(open(filepath, 'r', encoding="utf-8")) as yaml_file:
             schema = Map({
-                "data source": Str(), 
-                "speaker id": Str(), 
-                "data directory": Str(), 
-                "outputfilename": Str(), 
-                Optional("output_dirname"): Str(), 
+                "data source": Str(),
+                "speaker id": Str(),
+                "data directory": Str(),
+                "outputfilename": Str(),
+                Optional("output_dirname"): Str(),
                 "flags": Map({
                     "detect beep": Bool(),
                     "test": Bool()
-                    }),
+                }),
                 "tiers": Map({
                     "file": Bool(),
-                    "word": Bool(),
                     "utterance": Bool(),
+                    "word": Bool(),
                     "phoneme": Bool(),
                     "phone": Bool()
-                    }),
+                }),
                 "tier names": Map({
                     "file": Str(),
                     "word": Str(),
                     "utterance": Str(),
                     "phoneme": Str(),
                     "phone": Str()
-                    }),
-                "exclusion list": Str(), 
-                "pronunciation dictionary": Str(), 
+                }),
+                "exclusion list": Str(),
+                "pronunciation dictionary": Str(),
                 "word guess": Map({
                     "begin": Float(),
                     "end": Float()
-                    })
                 })
+            })
             try:
                 config_dict = load(yaml_file.read(), schema)
             except YAMLError as error:
@@ -106,7 +106,7 @@ def read_config_file(filepath: Union[Path, str, None]=None) -> dict:
 def read_exclusion_list(filepath: Path) -> dict:
     """
     Read the exclusion list from filepath.
-    
+
     If no exclusion list file is present, return an empty array
     after warning the user.
     """
@@ -116,20 +116,22 @@ def read_exclusion_list(filepath: Path) -> dict:
             exclusion_dict = yaml.data
     else:
         exclusion_dict = {}
-        print(f"Did not find the exclusion list at {filepath}. Proceeding anyhow.")
+        print(
+            f"Did not find the exclusion list at {filepath}. Proceeding anyhow.")
     return exclusion_dict
 
 
 def read_na_list(dirpath: Path) -> list[str]:
     """
     Read the old style exclusion list from na_list.txt.
-    
+
     If no exclusion list file is present, return an empty array
     after warning the user.
     """
     na_file = dirpath.joinpath('na_list.txt')
     if na_file.is_file():
-        na_list = [line.rstrip('\n') for line in open(na_file, encoding="utf-8")]
+        na_list = [line.rstrip('\n')
+                   for line in open(na_file, encoding="utf-8")]
     else:
         na_list = []
         print("Didn't find na_list.txt. Proceeding anyhow.")
@@ -153,8 +155,8 @@ def read_pronunciation_dict(filepath: Union[Path, str]) -> dict:
     if filepath.is_file():
         with closing(open(filepath, 'r', encoding="utf-8")) as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
-            pronunciation_dict = {row[0]: list(filter(None, row[1:])) 
-                                    for row in reader}
+            pronunciation_dict = {row[0]: list(filter(None, row[1:]))
+                                  for row in reader}
         return pronunciation_dict
     else:
         print(f"Didn't find {pronunciation_dict}. Exiting.")
