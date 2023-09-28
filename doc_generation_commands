@@ -1,5 +1,5 @@
 # Generate docs with pdoc ...
-pdoc -o docs cast
+pdoc -o docs/cast cast
 
 # and some diagrams to be linked as well.
 # Needs Graphviz to work properly
