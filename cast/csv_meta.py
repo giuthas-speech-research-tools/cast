@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,8 +34,18 @@ from pathlib import Path
 
 
 def add_prompt_info(table: dict, csv_meta_file: Path):
+    """
+    _summary_
+
+    Parameters
+    ----------
+    table : dict
+        _description_
+    csv_meta_file : Path
+        _description_
+    """
     meta_dict = {}
-    with closing(open(csv_meta_file, 'r')) as meta_file:
+    with closing(open(csv_meta_file, 'r', encoding='utf8')) as meta_file:
         reader = DictReader(meta_file)
         for row in reader:
             meta_dict[row['id']] = row['ortho']
@@ -44,12 +54,31 @@ def add_prompt_info(table: dict, csv_meta_file: Path):
         item['prompt'] = meta_dict[item['token_id']]
 
 
-def check_and_load_csv_meta(speaker_id: str, directory: Path, 
+def check_and_load_csv_meta(speaker_id: str, directory: Path,
                             test: bool, csv_meta_file: Path) -> list[dict]:
-    # Since we are concerned with audio annotation, wav files 
+    """
+    _summary_
+
+    Parameters
+    ----------
+    speaker_id : str
+        _description_
+    directory : Path
+        _description_
+    test : bool
+        _description_
+    csv_meta_file : Path
+        _description_
+
+    Returns
+    -------
+    list[dict]
+        _description_
+    """
+    # Since we are concerned with audio annotation, wav files
     # determine the name list for all other files.
     wav_files = sorted(directory.glob('*.wav'))
-    if(len(wav_files) < 1):
+    if (len(wav_files) < 1):
         print(f"Didn't find any sound files to concatanate in {directory}.")
         exit()
 
@@ -57,28 +86,27 @@ def check_and_load_csv_meta(speaker_id: str, directory: Path,
     if test and len(wav_files) >= 10:
         wav_files = wav_files[:10]
 
-
-    prompt_files = sorted(directory.glob('*.txt')) 
-    if(len(prompt_files) < 1):
+    prompt_files = sorted(directory.glob('*.txt'))
+    if (len(prompt_files) < 1):
         print("Didn't find any prompt files in {dirname}.")
         exit()
 
     # initialise table with the speaker_id and name repeated, wav_file name
     # from the list, and other fields empty
     table = [{
-                'excluded': False,
-                'filename': wavfile.stem,
-                'wav_path': wavfile,
-                'token_id': wavfile.stem[6:10].replace('_', '.'),
-                'prompt_path': None,
-                'ultra_path': None,
-                'id':wavfile.stem,
-                'speaker':speaker_id, 
-                'sliceBegin':'n/a',
-                'begin':'n/a', 
-                'end':'n/a', 
-                'prompt':'n/a'} 
-            for wavfile in wav_files]
+        'excluded': False,
+        'filename': wavfile.stem,
+        'wav_path': wavfile,
+        'token_id': wavfile.stem[6:10].replace('_', '.'),
+        'prompt_path': None,
+        'ultra_path': None,
+        'id':wavfile.stem,
+        'speaker':speaker_id,
+        'sliceBegin':'n/a',
+        'begin':'n/a',
+                'end':'n/a',
+                'prompt':'n/a'}
+             for wavfile in wav_files]
 
     add_prompt_info(table, csv_meta_file)
 

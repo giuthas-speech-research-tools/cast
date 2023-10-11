@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,11 +34,19 @@ from pathlib import Path, PureWindowsPath
 
 import scipy.io
 
-from cast.rasl_dat_to_wav import dat_to_wav
+from .rasl_dat_to_wav import dat_to_wav
 
 
 def convert_dats_to_wav(table: dict) -> None:
-    print(f"Looking for DAT files and trying to convert them to WAV.")
+    """
+    _summary_
+
+    Parameters
+    ----------
+    table : dict
+        _description_
+    """
+    print("Looking for DAT files and trying to convert them to WAV.")
     for entry in table:
         if entry['dat_path'].is_file():
             dat_to_wav(entry['dat_path'], entry['wav_path'])
@@ -46,8 +54,9 @@ def convert_dats_to_wav(table: dict) -> None:
             print(f"Dat file {entry['dat_path']} does not exist. Skipping.")
             continue
 
-def check_and_load_rasl_meta(speaker_id: str, directory: Path, 
-                            test: bool) -> list[dict]:
+
+def check_and_load_rasl_meta(speaker_id: str, directory: Path,
+                             test: bool) -> list[dict]:
     """
     Read a RASL .mat file and return relevant contents as a dict.
     """
@@ -67,7 +76,7 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
         print(f"Found no notes in {note_dir}. Exiting.")
         sys.exit()
     mat_file = possible_notes[0]
- 
+
     mat = scipy.io.loadmat(str(mat_file), squeeze_me=True)
     if not mat:
         print(f"Official notes at {mat_file} seems to be empty. Exiting.")
@@ -106,18 +115,18 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
                 'dat_filename': dat_path.name,
                 'dat_path': dat_path,
                 'wav_path': wav_path,
-                'id':dat_path.stem,
-                'speaker':speaker_id, 
-                'sliceBegin':'n/a',
-                'begin':'n/a', 
-                'end':'n/a', 
+                'id': dat_path.stem,
+                'speaker': speaker_id,
+                'sliceBegin': 'n/a',
+                'begin': 'n/a',
+                'end': 'n/a',
                 'date_and_time': date_and_time,
                 'prompt': element[1]
             }
             table.append(meta_token)
 
     wav_files = sorted(wav_dir.glob('*.wav'))
-    if(len(wav_files) < 1):
+    if (len(wav_files) < 1):
         print(f"Didn't find any sound files to concatanate in {directory}.")
         if not wav_dir.is_dir():
             wav_dir.mkdir()
@@ -128,4 +137,3 @@ def check_and_load_rasl_meta(speaker_id: str, directory: Path,
         table = table[:10]
 
     return table
-

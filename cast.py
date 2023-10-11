@@ -33,7 +33,7 @@ import sys
 import time
 from pathlib import Path
 
-from cast import (add_tiers_to_textgrid, concatenate_wavs, extract_textgrids, read_config_file,
+from cast import (add_tiers, concatenate_wavs, extract_textgrids, read_config_file,
                   read_pronunciation_dict,
                   remove_empty_intervals_from_textgrids)
 
