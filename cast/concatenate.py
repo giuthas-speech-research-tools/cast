@@ -38,10 +38,13 @@ import numpy as np
 # wav file handling
 import scipy.io.wavfile as sio_wavfile
 
-import cast.audio_processing as audio_processing
-from cast import (check_and_load_aaa_meta, check_and_load_csv_meta,
-                  check_and_load_rasl_meta, generate_textgrid,
-                  read_exclusion_list, write_results)
+from .audio_processing import detect_beep_and_speech, high_pass
+from .aaa_meta import check_and_load_aaa_meta
+from .csv_meta import check_and_load_csv_meta
+from .rasl_meta import check_and_load_rasl_meta
+from .textgrid_functions import generate_textgrid
+from .configuration import read_exclusion_list
+from .csv_output import write_results
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -78,7 +81,7 @@ def process_wav_file(table_entry: dict, samplerate: float, number_of_channels: i
     # setup the high-pass filter for removing the mains frequency (and anything below it)
     # from the recorded sound.
     if high_pass_filter:
-        beep, has_speech = audio_processing.detect_beep_and_speech(
+        beep, has_speech = detect_beep_and_speech(
             frames, samplerate, high_pass_filter['b'], high_pass_filter['a'], table_entry['filename'])
         table_entry['beep'] = cursor + beep
         table_entry['has speech'] = has_speech
@@ -162,7 +165,7 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
     # TODO: consider moving the whole loop into processWavFile and renaming the function
     if detect_beep:
         mains_frequency = 60
-        high_pass_filter = audio_processing.high_pass(
+        high_pass_filter = high_pass(
             samplerate, mains_frequency)
 
     cursor = 0.0

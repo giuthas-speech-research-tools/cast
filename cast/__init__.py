@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -28,13 +28,14 @@
 # articles listed in README.markdown. They can also be found in
 # citations.bib in BibTeX format.
 #
+from .audio_processing import high_pass, high_pass_50, detect_beep_and_speech
 from .aaa_meta import check_and_load_aaa_meta
 from .clean_textgrids import remove_empty_intervals_from_textgrids
 from .concatenate import concatenate_wavs
 from .configuration import (read_config_file, read_exclusion_list,
-                             read_pronunciation_dict)
+                            read_pronunciation_dict)
 from .csv_meta import check_and_load_csv_meta
 from .csv_output import write_results
 from .extract import extract_textgrids
 from .rasl_meta import check_and_load_rasl_meta
-from .textgrid_functions import add_tiers, generate_textgrid
+from .textgrid_functions import add_tiers_to_textgrid, generate_textgrid

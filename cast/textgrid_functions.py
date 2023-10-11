@@ -32,7 +32,8 @@
 textgrid_functions contains functions for generating and modifying TextGrid objects.
 """
 import pprint
-from typing import Dict, List
+from typing import Union
+from pathlib import Path
 
 import numpy as np
 from textgrids import TextGrid
@@ -41,11 +42,22 @@ pp = pprint.PrettyPrinter(indent=4)
 
 # def add_boundaries_and_segments:
 
-# TODO: chop the rewrite to pieces. try starting with the config file and the pseudocode
+
+def add_tiers(speaker_id: str, original_path: Union[str, Path], outfilename: str, config_dict: dict,
+              pronunciation_dict: dict, test: bool, detect_beep: bool) -> None:
+    if isinstance(original_path, str):
+        original_path = Path(original_path)
+
+    if original_path.is_file:
+        textgrid = TextGrid(str(original_path))
+        table = ?
+        add_tiers_to_textgrid(textgrid, table, config_dict, pronunciation_dict)
+    elif original_path.is_dir:
+        files = original_path.glob('*.TextGrid')
 
 
-def add_tiers(textgrid: TextGrid, table: List, config_dict: Dict,
-              pronunciation_dict: Dict = None) -> None:
+def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
+                          pronunciation_dict: dict = None) -> None:
     """
     Add Tiers to a TextGrid
 
@@ -124,7 +136,7 @@ def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> 
     """
 
     textgrid = TextGrid()
-    add_tiers(textgrid, table, config_dict, pronunciation_dict)
+    add_tiers_to_textgrid(textgrid, table, config_dict, pronunciation_dict)
 
     files = []
     words = []
