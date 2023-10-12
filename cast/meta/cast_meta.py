@@ -33,6 +33,7 @@ def get_token_list(config_dict: dict, directory: Path) -> dict:
     elif data_source is Datasource.CSV:
         # table = check_and_load_csv_meta(
         #     speaker_id, directory, test, csv_meta_file)
+        # This was supposed to be in used in the palatalisation project.
         print(f"Unsupported data source: {data_source}. Exiting")
         sys.exit()
     else:
