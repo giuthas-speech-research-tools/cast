@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -46,17 +46,17 @@ def add_prompt_info(table: list) -> None:
             print(f'Excluding {filename}. Recording has no prompt file.')
             entry['excluded'] = True
         else:
-            with closing(open(entry['prompt_path'], 'r')) as prompt_file:
+            with closing(open(entry['prompt_path'], 'r', encoding='utf8')) as prompt_file:
                 prompt = prompt_file.readline().strip()
                 entry['prompt'] = prompt
 
 
-def check_and_load_aaa_meta(speaker_id: str, directory: Path, 
+def check_and_load_aaa_meta(speaker_id: str, directory: Path,
                             test: bool) -> list[dict]:
-    # Since we are concerned with audio annotation, wav files 
+    # Since we are concerned with audio annotation, wav files
     # determine the name list for all other files.
     wav_files = sorted(directory.glob('*.wav'))
-    if(len(wav_files) < 1):
+    if (len(wav_files) < 1):
         print(f"Didn't find any sound files to concatanate in {directory}.")
         exit()
 
@@ -64,34 +64,33 @@ def check_and_load_aaa_meta(speaker_id: str, directory: Path,
     if test and len(wav_files) >= 10:
         wav_files = wav_files[:10]
 
-
-    prompt_files = sorted(directory.glob('*.txt')) 
-    if(len(prompt_files) < 1):
+    prompt_files = sorted(directory.glob('*.txt'))
+    if (len(prompt_files) < 1):
         print("Didn't find any prompt files in {dirname}.")
         exit()
 
     # initialise table with the speaker_id and name repeated, wav_file name
     # from the list, and other fields empty
     table = [{
-                'excluded': False,
-                'filename': wavfile.stem,
-                'wav_path': wavfile,
-                'prompt_path': wavfile.with_suffix('.txt'),
-                'ultra_path': wavfile.with_suffix('.ult'),
-                'id':wavfile.stem,
-                'speaker':speaker_id, 
-                'sliceBegin':'n/a',
-                'begin':'n/a', 
-                'end':'n/a', 
-                'prompt':'n/a'} 
-            for wavfile in wav_files]
+        'excluded': False,
+        'filename': wavfile.stem,
+        'wav_path': wavfile,
+        'prompt_path': wavfile.with_suffix('.txt'),
+        'ultra_path': wavfile.with_suffix('.ult'),
+        'id': wavfile.stem,
+        'speaker': speaker_id,
+        'sliceBegin': 'n/a',
+        'begin': 'n/a',
+        'end': 'n/a',
+        'prompt': 'n/a'}
+        for wavfile in wav_files]
 
-    for entry in table: 
+    for entry in table:
         filename = entry['filename']
         if not entry['ultra_path'].is_file():
             print(f'Excluding {filename}. Recording has no ultrasound file.')
             entry['excluded'] = True
-        
+
     add_prompt_info(table)
 
     return table

@@ -43,13 +43,15 @@ from .rasl_meta import check_and_load_rasl_meta
 
 pp = pprint.PrettyPrinter(indent=4)
 
-# def add_boundaries_and_segments:
 
-
-def add_tiers(speaker_id: str, original_path: Union[str, Path], outfilename: str,
-              config_dict: dict, pronunciation_dict: dict = None,
-              test: bool = False, detect_beep: bool = False,
+def add_tiers(config_dict: dict, pronunciation_dict: dict = None,
               csv_meta_file: Optional[str] = None) -> None:
+
+    # TODO: this should really be given as a command line argument
+    original_path = config_dict['original path']
+    speaker_id = config_dict['speaker id']
+    test = config_dict['test']
+
     if isinstance(original_path, str):
         original_path = Path(original_path)
 
@@ -59,7 +61,8 @@ def add_tiers(speaker_id: str, original_path: Union[str, Path], outfilename: str
     elif original_path.is_dir:
         data_source = config_dict['data source']
         if data_source == 'AAA':
-            table = check_and_load_csv_meta(speaker_id, original_path, test)
+            table = check_and_load_csv_meta(
+                speaker_id, original_path, test, config_dict['csv metafile'])
         elif data_source == 'RASL':
             table = check_and_load_rasl_meta(speaker_id, original_path, test)
         elif data_source == 'csv':
