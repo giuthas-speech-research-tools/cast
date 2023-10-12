@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -41,8 +41,8 @@ def write_fav_input(table, filename):
     fieldnames = ['id', 'speaker', 'begin', 'end', 'word']
     results = [{key: entry[key] for key in fieldnames} for entry in table]
 
-    with closing(open(filename, 'w')) as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, 
+    with closing(open(filename, 'w', encoding='utf8')) as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames,
                                 delimiter='\t', quoting=csv.QUOTE_NONE)
 
         list(map(writer.writerow, results))
@@ -58,12 +58,14 @@ def write_results(table, filename, detect_beep):
     """
     # extrasaction='ignore' does not seem to be working so we do this the long way
     if detect_beep:
-        fieldnames = ['id', 'speaker', 'sliceBegin', 'beep', 'begin', 'sliceEnd', 'prompt']
-    else: 
-        fieldnames = ['id', 'speaker', 'sliceBegin', 'begin', 'sliceEnd', 'prompt']
+        fieldnames = ['id', 'speaker', 'sliceBegin',
+                      'beep', 'begin', 'sliceEnd', 'prompt']
+    else:
+        fieldnames = ['id', 'speaker', 'sliceBegin',
+                      'begin', 'sliceEnd', 'prompt']
     results = [{key: entry[key] for key in fieldnames} for entry in table]
 
-    with closing(open(filename, 'w')) as csvfile:
+    with closing(open(filename, 'w', encoding='utf8')) as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames,
                                 quoting=csv.QUOTE_NONNUMERIC)
 

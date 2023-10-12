@@ -4,7 +4,6 @@ from pathlib import Path
 import sys
 
 from .aaa_meta import check_and_load_aaa_meta
-from .csv_meta import check_and_load_csv_meta
 from .rasl_meta import check_and_load_rasl_meta
 
 
@@ -32,8 +31,10 @@ def get_token_list(config_dict: dict, directory: Path) -> dict:
     elif data_source is Datasource.RASL:
         table = check_and_load_rasl_meta(speaker_id, directory, test)
     elif data_source is Datasource.CSV:
-        table = check_and_load_csv_meta(
-            speaker_id, directory, test, csv_meta_file)
+        # table = check_and_load_csv_meta(
+        #     speaker_id, directory, test, csv_meta_file)
+        print(f"Unsupported data source: {data_source}. Exiting")
+        sys.exit()
     else:
         print(f"Unknown data source: {data_source}. Exiting.")
         sys.exit()

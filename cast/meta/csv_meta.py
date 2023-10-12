@@ -31,6 +31,7 @@
 from contextlib import closing
 from csv import DictReader
 from pathlib import Path
+import sys
 
 
 def add_prompt_info(table: dict, csv_meta_file: Path):
@@ -57,7 +58,10 @@ def add_prompt_info(table: dict, csv_meta_file: Path):
 def check_and_load_csv_meta(speaker_id: str, directory: Path,
                             test: bool, csv_meta_file: Path) -> list[dict]:
     """
-    _summary_
+    Currently not supported.
+
+    This is a concept for providing initial metadata as a csv file that will
+    be used for specifying prompts/ortographic content for each sound file.
 
     Parameters
     ----------
@@ -80,7 +84,7 @@ def check_and_load_csv_meta(speaker_id: str, directory: Path,
     wav_files = sorted(directory.glob('*.wav'))
     if (len(wav_files) < 1):
         print(f"Didn't find any sound files to concatanate in {directory}.")
-        exit()
+        sys.exit()
 
     # for test runs do only first ten files:
     if test and len(wav_files) >= 10:
@@ -89,7 +93,7 @@ def check_and_load_csv_meta(speaker_id: str, directory: Path,
     prompt_files = sorted(directory.glob('*.txt'))
     if (len(prompt_files) < 1):
         print("Didn't find any prompt files in {dirname}.")
-        exit()
+        sys.exit()
 
     # initialise table with the speaker_id and name repeated, wav_file name
     # from the list, and other fields empty
