@@ -38,10 +38,12 @@ import numpy as np
 # wav file handling
 import scipy.io.wavfile as sio_wavfile
 
+from cast.meta.cast_meta import get_token_list
+
 from .audio_processing import detect_beep_and_speech, high_pass
-from .aaa_meta import check_and_load_aaa_meta
-from .csv_meta import check_and_load_csv_meta
-from .rasl_meta import check_and_load_rasl_meta
+from .meta.aaa_meta import check_and_load_aaa_meta
+from .meta.csv_meta import check_and_load_csv_meta
+from .meta.rasl_meta import check_and_load_rasl_meta
 from .textgrid_functions import generate_textgrid
 from .configuration import read_exclusion_list
 from .csv_output import write_results
@@ -121,32 +123,21 @@ def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
             entry['excluded'] = True
 
 
-def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
+def concatenate_wavs(directory: Union[str, Path],
                      outputfile: Union[str, Path], config_dict: dict,
                      pronunciation_dict: Union[dict, None] = None,
-                     test: bool = False, detect_beep: bool = False, only_words: bool = False,
-                     csv_meta_file: Optional[Path] = None):
+                     only_words: bool = False):
     if isinstance(directory, str):
         directory = Path(directory)
     if isinstance(outputfile, str):
         outputfile = Path(outputfile)
 
-    data_source = config_dict['data source']
-    if data_source == 'AAA':
-        table = check_and_load_aaa_meta(speaker_id, directory, test)
-    elif data_source == 'RASL':
-        table = check_and_load_rasl_meta(speaker_id, directory, test)
-    elif data_source == 'csv':
-        table = check_and_load_csv_meta(
-            speaker_id, directory, test, csv_meta_file)
-    else:
-        print(f"Unknown data source: {data_source}. Exiting.")
-        sys.exit()
+    table = get_token_list(config_dict, directory)
 
     apply_exclusion_list(table, Path(config_dict['exclusion list']))
 
     # Only add the beep entry if we are going to be using it.
-    if detect_beep:
+    if config_dict['flags']['detect beep']:
         for entry in table:
             entry['beep'] = 'n/a'
 
@@ -163,7 +154,7 @@ def concatenate_wavs(speaker_id: str, directory: Union[str, Path],
 
     # Read wavs and keep track of file boundaries.
     # TODO: consider moving the whole loop into processWavFile and renaming the function
-    if detect_beep:
+    if config_dict['flags']['detect beep']:
         mains_frequency = 60
         high_pass_filter = high_pass(
             samplerate, mains_frequency)
