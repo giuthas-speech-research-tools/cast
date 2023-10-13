@@ -58,7 +58,7 @@ def process_command(command: CommandStrings, path: Path, config_dict: dict):
         if not config_dict['flags']['only words']:
             pronunciation_dict = read_pronunciation_dict(
                 config_dict['pronunciation dictionary'])
-            add_tiers(config_dict, pronunciation_dict=pronunciation_dict)
+            add_tiers(path, config_dict, pronunciation_dict=pronunciation_dict)
     elif command is CommandStrings.CONCATENATE:
         if not config_dict['flags']['only words']:
             pronunciation_dict = read_pronunciation_dict(

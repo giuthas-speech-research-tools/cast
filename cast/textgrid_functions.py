@@ -32,7 +32,8 @@
 textgrid_functions contains functions for generating and modifying TextGrid objects.
 """
 import pprint
-from typing import Optional, Union
+import sys
+from typing import Optional
 from pathlib import Path
 
 import numpy as np
@@ -44,34 +45,36 @@ from .meta.rasl_meta import check_and_load_rasl_meta
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def add_tiers(config_dict: dict, pronunciation_dict: dict = None,
+def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
               csv_meta_file: Optional[str] = None) -> None:
 
-    # TODO: this should really be given as a command line argument
-    original_path = config_dict['original path']
     speaker_id = config_dict['speaker id']
     test = config_dict['test']
 
-    if isinstance(original_path, str):
-        original_path = Path(original_path)
+    if isinstance(path, str):
+        path = Path(path)
 
-    if original_path.is_file:
-        textgrid = TextGrid(str(original_path))
-        add_tiers_to_textgrid(textgrid, config_dict, pronunciation_dict)
-    elif original_path.is_dir:
+    if path.is_file:
+        if path.suffix == ".TextGrid":
+            textgrid = TextGrid(str(path))
+            add_tiers_to_textgrid(textgrid, config_dict, pronunciation_dict)
+        else:
+            print(f"Unknown file type: {path.suffix}. Exiting.")
+            sys.exit()
+    elif path.is_dir:
         data_source = config_dict['data source']
         if data_source == 'AAA':
             table = check_and_load_csv_meta(
-                speaker_id, original_path, test, config_dict['csv metafile'])
+                speaker_id, path, test, config_dict['csv metafile'])
         elif data_source == 'RASL':
-            table = check_and_load_rasl_meta(speaker_id, original_path, test)
+            table = check_and_load_rasl_meta(speaker_id, path, test)
         elif data_source == 'csv':
             table = check_and_load_csv_meta(
-                speaker_id, original_path, test, csv_meta_file)
+                speaker_id, path, test, csv_meta_file)
         else:
             print(f"Unknown data source: {data_source}. Exiting.")
-            exit()
-        files = original_path.glob('*.TextGrid')
+            sys.exit()
+        files = path.glob('*.TextGrid')
 
 
 def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
