@@ -39,6 +39,7 @@ from pathlib import Path
 import numpy as np
 from textgrids import TextGrid
 
+from .meta.aaa_meta import check_and_load_aaa_meta
 from .meta.csv_meta import check_and_load_csv_meta
 from .meta.rasl_meta import check_and_load_rasl_meta
 
@@ -63,9 +64,10 @@ def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
             sys.exit()
     elif path.is_dir:
         data_source = config_dict['data source']
+        table = {}
         if data_source == 'AAA':
-            table = check_and_load_csv_meta(
-                speaker_id, path, test, config_dict['csv metafile'])
+            table = check_and_load_aaa_meta(
+                speaker_id, path, test)
         elif data_source == 'RASL':
             table = check_and_load_rasl_meta(speaker_id, path, test)
         elif data_source == 'csv':
@@ -74,7 +76,10 @@ def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
         else:
             print(f"Unknown data source: {data_source}. Exiting.")
             sys.exit()
-        files = path.glob('*.TextGrid')
+        for item in table:
+            textgrid = TextGrid((item['filename'] + ".TextGrid"))
+            add_tiers_to_textgrid(textgrid, config_dict, pronunciation_dict)
+    # TODO: write out the resulting textgrids. also for the single textgrid case
 
 
 def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,

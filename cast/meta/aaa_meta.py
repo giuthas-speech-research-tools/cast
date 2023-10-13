@@ -30,6 +30,7 @@
 #
 from contextlib import closing
 from pathlib import Path
+import sys
 
 
 def add_prompt_info(table: list) -> None:
@@ -56,18 +57,18 @@ def check_and_load_aaa_meta(speaker_id: str, directory: Path,
     # Since we are concerned with audio annotation, wav files
     # determine the name list for all other files.
     wav_files = sorted(directory.glob('*.wav'))
-    if (len(wav_files) < 1):
+    if len(wav_files) < 1:
         print(f"Didn't find any sound files to concatanate in {directory}.")
-        exit()
+        sys.exit()
 
     # for test runs do only first ten files:
     if test and len(wav_files) >= 10:
         wav_files = wav_files[:10]
 
     prompt_files = sorted(directory.glob('*.txt'))
-    if (len(prompt_files) < 1):
+    if len(prompt_files) < 1:
         print("Didn't find any prompt files in {dirname}.")
-        exit()
+        sys.exit()
 
     # initialise table with the speaker_id and name repeated, wav_file name
     # from the list, and other fields empty
