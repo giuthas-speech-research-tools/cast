@@ -41,9 +41,6 @@ import scipy.io.wavfile as sio_wavfile
 from cast.meta.cast_meta import get_token_list
 
 from .audio_processing import detect_beep_and_speech, high_pass
-from .meta.aaa_meta import check_and_load_aaa_meta
-from .meta.csv_meta import check_and_load_csv_meta
-from .meta.rasl_meta import check_and_load_rasl_meta
 from .textgrid_functions import generate_textgrid
 from .configuration import read_exclusion_list
 from .csv_output import write_results
@@ -51,8 +48,10 @@ from .csv_output import write_results
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def process_wav_file(table_entry: dict, samplerate: float, number_of_channels: int, cursor: float,
-                     high_pass_filter: Union[dict[str, np.ndarray], None] = None) -> Tuple[float, np.ndarray]:
+def process_wav_file(table_entry: dict, samplerate: float,
+                     number_of_channels: int, cursor: float,
+                     high_pass_filter: Optional[dict[str, np.ndarray]] = None
+                     ) -> Tuple[float, np.ndarray]:
     (next_samplerate, frames) = sio_wavfile.read(table_entry['wav_path'])
     n_frames = frames.shape[0]
     if len(frames.shape) == 1:
@@ -62,17 +61,16 @@ def process_wav_file(table_entry: dict, samplerate: float, number_of_channels: i
 
     if next_samplerate != samplerate:
         print('Mismatched sample rates in sound files.')
-        print("{next_samplerate} in {infile} is not the common one: {samplerate}".format(
-            next_samplerate=next_samplerate, infile=table_entry['wav_file'],
-            samplerate=samplerate))
+        print(f"{next_samplerate} in {table_entry['wav_file']} "
+              f"is not the common one: {samplerate}")
         print('Exiting.')
         sys.exit()
 
     if n_channels != number_of_channels:
         print('Mismatched numbers of channels in sound files.')
-        print("{n_channels} in {infile} is not the common one: {number_of_channels}".format(
-            n_channels=n_channels, infile=table_entry['wav_file'],
-            number_of_channels=number_of_channels))
+        print(
+            f"{n_channels} in {table_entry['wav_file']} "
+            f"is not the common one: {number_of_channels}")
         print('Exiting.')
         sys.exit()
 
@@ -80,11 +78,12 @@ def process_wav_file(table_entry: dict, samplerate: float, number_of_channels: i
 
     table_entry['sliceBegin'] = cursor
 
-    # setup the high-pass filter for removing the mains frequency (and anything below it)
-    # from the recorded sound.
+    # setup the high-pass filter for removing the mains frequency (and anything
+    # below it) from the recorded sound.
     if high_pass_filter:
         beep, has_speech = detect_beep_and_speech(
-            frames, samplerate, high_pass_filter['b'], high_pass_filter['a'], table_entry['filename'])
+            frames, samplerate, high_pass_filter['b'],
+            high_pass_filter['a'], table_entry['filename'])
         table_entry['beep'] = cursor + beep
         table_entry['has speech'] = has_speech
         # Start segmentation in FAV and other systems after the beep.
@@ -117,7 +116,8 @@ def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
         # based on 'foobar').
         prompt = entry['prompt']
         if (prompt in exclusion_list['prompts'] or
-                [element for element in exclusion_list['parts of prompts'] if (element in prompt)]):
+                [element for element in exclusion_list['parts of prompts']
+                 if element in prompt]):
             print(
                 f'Excluding {filename}. Prompt: {prompt} matches exclusion list.')
             entry['excluded'] = True
@@ -164,7 +164,7 @@ def concatenate_wavs(directory: Union[str, Path],
     for entry in table:
         if entry['excluded']:
             continue
-        if detect_beep:
+        if config_dict['flags']['detect beep']:
             cursor, new_frames = process_wav_file(
                 entry, samplerate, number_of_channels, cursor,
                 high_pass_filter=high_pass_filter)
@@ -184,7 +184,7 @@ def concatenate_wavs(directory: Union[str, Path],
 
     # Weed out the skipped ones before writing the data out.
     table = [token for token in table if not token['excluded']]
-    write_results(table, outcsv, detect_beep)
+    write_results(table, outcsv, config_dict['flags']['detect beep'])
     if only_words:
         generate_textgrid(table, out_textgrid, config_dict)
     else:
