@@ -64,7 +64,7 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
                 "data source": Str(),
                 "speaker id": Str(),
                 "data directory": Str(),
-                "outputfilename": Str(),
+                "outputfile": Str(),
                 Optional("output_dirname"): Str(),
                 "flags": Map({
                     "detect beep": Bool(),

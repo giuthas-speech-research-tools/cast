@@ -38,8 +38,8 @@ from pathlib import Path
 import numpy as np
 from textgrids import TextGrid
 
-from .csv_meta import check_and_load_csv_meta
-from .rasl_meta import check_and_load_rasl_meta
+from .meta.csv_meta import check_and_load_csv_meta
+from .meta.rasl_meta import check_and_load_rasl_meta
 
 pp = pprint.PrettyPrinter(indent=4)
 

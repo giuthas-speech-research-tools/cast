@@ -1,5 +1,39 @@
+#
+# Copyright (c) 2022-2023 Pertti Palo.
+#
+# This file is part of Computer Assisted Segmentation Tools
+# (see https://github.com/giuthas-speech-research-tools/cast/).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# The example data packaged with this program is licensed under the
+# Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+# International (CC BY-NC-SA 4.0) License. You should have received a
+# copy of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+# International (CC BY-NC-SA 4.0) License along with the data. If not,
+# see <https://creativecommons.org/licenses/by-nc-sa/4.0/> for details.
+#
+# When using the toolkit for scientific publications, please cite the
+# articles listed in README.markdown. They can also be found in
+# citations.bib in BibTeX format.
+#
+"""
+Define and process CAST commandline commands.
+"""
 from enum import Enum
 from pathlib import Path
+import sys
 from .clean_textgrids import remove_empty_intervals_from_textgrids
 from .concatenate import concatenate_wavs
 
@@ -18,7 +52,7 @@ class CommandStrings(Enum):
     REMOVE_DOUBLE_WORD_BOUNDARIES = 'remove-double-word-boundaries'
 
 
-def process_command(command: CommandStrings, config_dict: dict):
+def process_command(command: CommandStrings, path: Path, config_dict: dict):
 
     if command is CommandStrings.ADD:
         if not config_dict['flags']['only words']:
@@ -30,17 +64,17 @@ def process_command(command: CommandStrings, config_dict: dict):
             pronunciation_dict = read_pronunciation_dict(
                 config_dict['pronunciation dictionary'])
             concatenate_wavs(
-                config_dict, pronunciation_dict=pronunciation_dict)
+                path, config_dict, pronunciation_dict)
         else:
-            concatenate_wavs(config_dict)
+            concatenate_wavs(path, config_dict)
     elif command is CommandStrings.REMOVE_DOUBLE_WORD_BOUNDARIES:
         if not config_dict['output_dirname']:
             print(
                 'Fatal: No output directory for new textgrids specified in config file.')
         remove_empty_intervals_from_textgrids(
-            Path(original_dirname), Path(config_dict['output_dirname']))
+            Path(path), Path(config_dict['output_dirname']))
     elif command is CommandStrings.EXTRACT:
-        extract_textgrids(Path(original_dirname), Path(outfilename))
+        extract_textgrids(Path(path), Path(config_dict['outputfile']))
     else:
         print(f"Did not recognise the command {command}. Exiting.")
-        exit()
+        sys.exit()

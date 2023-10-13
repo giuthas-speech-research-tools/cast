@@ -124,9 +124,11 @@ def apply_exclusion_list(table: list[dict], exclusion_path: Path) -> None:
 
 
 def concatenate_wavs(directory: Union[str, Path],
-                     outputfile: Union[str, Path], config_dict: dict,
+                     config_dict: dict,
                      pronunciation_dict: Union[dict, None] = None,
                      only_words: bool = False):
+    outputfile = config_dict['outputfile']
+
     if isinstance(directory, str):
         directory = Path(directory)
     if isinstance(outputfile, str):
