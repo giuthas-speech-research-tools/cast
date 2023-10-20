@@ -59,6 +59,7 @@ def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
         if path.suffix == ".TextGrid":
             textgrid = TextGrid(str(path))
             add_tiers_to_textgrid(textgrid, config_dict, pronunciation_dict)
+            textgrid.write(str(path))
         else:
             print(f"Unknown file type: {path.suffix}. Exiting.")
             sys.exit()
@@ -79,7 +80,7 @@ def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
         for item in table:
             textgrid = TextGrid((item['filename'] + ".TextGrid"))
             add_tiers_to_textgrid(textgrid, config_dict, pronunciation_dict)
-    # TODO: write out the resulting textgrids. also for the single textgrid case
+            textgrid.write((item['filename'] + ".TextGrid"))
 
 
 def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
