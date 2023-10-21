@@ -72,6 +72,8 @@ def check_and_load_aaa_meta(speaker_id: str, directory: Path,
 
     # initialise table with the speaker_id and name repeated, wav_file name
     # from the list, and other fields empty
+
+    # TODO: consider making this a dataclass
     table = [{
         'excluded': False,
         'filename': wavfile.stem,

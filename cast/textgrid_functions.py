@@ -146,7 +146,10 @@ def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
             entry['segment boundaries'] = boundaries
 
 
-def generate_textgrid(table, filename, config_dict, pronunciation_dict=None) -> None:
+def generate_textgrid(
+        table, filename, config_dict, pronunciation_dict=None) -> None:
+    # TODO: move the tier generation from here to above and the tier content
+    # generation probably to its own function
     """
     _summary_
 
