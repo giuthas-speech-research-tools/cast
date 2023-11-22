@@ -31,6 +31,7 @@
 """
 textgrid_functions contains functions for generating and modifying TextGrid objects.
 """
+from dataclasses import dataclass
 import pprint
 import sys
 from typing import Optional
@@ -102,7 +103,12 @@ def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
     begin_coeff = config_dict['word guess']['begin']
     end_coeff = config_dict['word guess']['end']
 
-    if config_dict['flags']['utterance'] or config_dict['flags']['word']:
+    if config_dict['flags']['utterance']:
+        utterance = generate_utterance_intervals(table)
+        textgrid.interval_tier_from_array(
+            config_dict['tier names']['utterance'], utterance)
+    elif config_dict['flags']['word']:
+        words = generate_word_intervals(table)
         textgrid.interval_tier_from_array(
             config_dict['tier names']['word'], words)
     if config_dict['flags']['phoneme']:
@@ -144,6 +150,120 @@ def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
                 (entry['end'] - earliest_speech)*end_coeff
             boundaries = [seg_begin, seg_end]
             entry['segment boundaries'] = boundaries
+
+
+@dataclass
+class Interval:
+    begin: float
+    end: float
+    label: str = ''
+
+
+def append_beginning(entry: dict, intervals: list) -> None:
+    if 'beep' in entry:
+        begin_buffer = {
+            'label': '',
+            'begin': entry['sliceBegin'],
+            'end': entry['beep']
+        }
+        intervals.append(begin_buffer)
+
+        beep = {
+            'label': 'BEEP',
+            'begin': entry['beep'],
+            'end': entry['beep'] + 0.05
+        }
+        intervals.append(beep)
+
+        after_beep = {
+            'label': '',
+            'begin': entry['beep'] + 0.05,
+            'end': entry['segment boundaries'][0]
+        }
+        intervals.append(after_beep)
+    else:
+        begin_buffer = {
+            'label': '',
+            'begin': entry['sliceBegin'],
+            'end': entry['segment boundaries'][0]
+        }
+        intervals.append(begin_buffer)
+
+
+def append_end(entry: dict, intervals: list) -> None:
+    end_buffer = {
+        'label': '',
+        'begin': entry['segment boundaries'][-1],
+        'end': entry['sliceEnd']}
+    intervals.append(end_buffer)
+
+
+def generate_utterance_intervals(table) -> list[Interval]:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    table : _type_
+        _description_
+    filename : _type_
+        _description_
+    config_dict : _type_
+        _description_
+    pronunciation_dict : _type_, optional
+        _description_, by default None
+    """
+
+    words = []
+    for entry in table:
+        append_beginning(entry, words)
+
+        # For words and utterances one long interval.
+        word = {
+            'label': entry['prompt'],
+            'begin': entry['segment boundaries'][0],
+            'end': entry['segment boundaries'][-1]
+        }
+        words.append(word)
+
+        append_end(entry, words)
+
+    return words
+
+
+def generate_word_intervals(table) -> list[Interval]:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    table : _type_
+        _description_
+    filename : _type_
+        _description_
+    config_dict : _type_
+        _description_
+    pronunciation_dict : _type_, optional
+        _description_, by default None
+    """
+
+    intervals = []
+    for entry in table:
+        append_beginning(entry, intervals)
+
+        words = entry['prompt'].split()
+        boundaries =         
+        for word in words:
+            interval = {
+                'label': word,
+                'begin': ,
+                'end': entry['segment boundaries'][-1]
+            }
+            intervals.append(interval)
+
+        append_end(entry, intervals)
+
+    return intervals
 
 
 def generate_textgrid(
