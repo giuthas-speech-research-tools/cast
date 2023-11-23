@@ -139,7 +139,7 @@ def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
         utterance = generate_utterance_intervals(table)
         textgrid.interval_tier_from_array(
             config_dict['tier names']['utterance'], utterance)
-    elif config_dict['flags']['word']:
+    if config_dict['flags']['word']:
         words = generate_word_intervals(table)
         textgrid.interval_tier_from_array(
             config_dict['tier names']['word'], words)

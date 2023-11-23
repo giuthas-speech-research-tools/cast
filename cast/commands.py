@@ -55,18 +55,18 @@ class CommandStrings(Enum):
 def process_command(command: CommandStrings, path: Path, config_dict: dict):
 
     if command is CommandStrings.ADD:
+        pronunciation_dict = None
         if not config_dict['flags']['only words']:
             pronunciation_dict = read_pronunciation_dict(
                 config_dict['pronunciation dictionary'])
-            add_tiers(path, config_dict, pronunciation_dict=pronunciation_dict)
+        add_tiers(path, config_dict, pronunciation_dict=pronunciation_dict)
     elif command is CommandStrings.CONCATENATE:
+        pronunciation_dict = None
         if not config_dict['flags']['only words']:
             pronunciation_dict = read_pronunciation_dict(
                 config_dict['pronunciation dictionary'])
-            concatenate_wavs(
-                path, config_dict, pronunciation_dict)
-        else:
-            concatenate_wavs(path, config_dict)
+        concatenate_wavs(
+            path, config_dict, pronunciation_dict)
     elif command is CommandStrings.REMOVE_DOUBLE_WORD_BOUNDARIES:
         if not config_dict['output_dirname']:
             print(
