@@ -29,16 +29,15 @@
 # citations.bib in BibTeX format.
 #
 """
-textgrid_functions contains functions for generating and modifying TextGrid objects.
+Functions for generating and modifying TextGrid objects.
 """
-from dataclasses import dataclass
 import pprint
 import sys
 from typing import Optional
 from pathlib import Path
 
 import numpy as np
-from textgrids import TextGrid
+from textgrids import TextGrid, Interval, Tier
 
 from .meta.aaa_meta import check_and_load_aaa_meta
 from .meta.csv_meta import check_and_load_csv_meta
@@ -103,27 +102,13 @@ def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
     begin_coeff = config_dict['word guess']['begin']
     end_coeff = config_dict['word guess']['end']
 
-    if config_dict['flags']['utterance']:
-        utterance = generate_utterance_intervals(table)
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['utterance'], utterance)
-    elif config_dict['flags']['word']:
-        words = generate_word_intervals(table)
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['word'], words)
-    if config_dict['flags']['phoneme']:
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['phoneme'], segments)
-    if config_dict['flags']['phone']:
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['phone'], segments)
-
     for entry in table:
         if pronunciation_dict:
             if entry['prompt'] in pronunciation_dict:
                 transcription = pronunciation_dict[entry['prompt']]
                 print(
-                    f"Generating boundaries for {entry['prompt']} which is pronounced {transcription}.")
+                    f"Generating boundaries for {entry['prompt']} "
+                    "which is pronounced {transcription}.")
                 entry['transcription'] = transcription
 
                 # Generate an evenly spaced first guess of segmentation by taking the
@@ -151,43 +136,48 @@ def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
             boundaries = [seg_begin, seg_end]
             entry['segment boundaries'] = boundaries
 
+    if config_dict['flags']['utterance']:
+        utterance = generate_utterance_intervals(table)
+        textgrid.interval_tier_from_array(
+            config_dict['tier names']['utterance'], utterance)
+    elif config_dict['flags']['word']:
+        words = generate_word_intervals(table)
+        textgrid.interval_tier_from_array(
+            config_dict['tier names']['word'], words)
+    if config_dict['flags']['phoneme']:
+        segments = generate_segments(table, pronunciation_dict)
+        textgrid.interval_tier_from_array(
+            config_dict['tier names']['phoneme'], segments)
+    if config_dict['flags']['phone']:
+        # TODO: check if phoneme tier already exists and if it does, just copy it
+        textgrid.interval_tier_from_array(
+            config_dict['tier names']['phone'], segments)
 
-@dataclass
-class Interval:
-    begin: float
-    end: float
-    label: str = ''
 
-
-def append_beginning(entry: dict, intervals: list) -> None:
+def append_beginning(entry: dict, tier: Tier) -> None:
     if 'beep' in entry:
-        begin_buffer = {
-            'label': '',
-            'begin': entry['sliceBegin'],
-            'end': entry['beep']
-        }
-        intervals.append(begin_buffer)
+        begin_buffer = Interval(
+            '', xmin=entry['sliceBegin'], xmax=entry['beep'])
+        tier.append(begin_buffer)
 
-        beep = {
-            'label': 'BEEP',
-            'begin': entry['beep'],
-            'end': entry['beep'] + 0.05
-        }
-        intervals.append(beep)
+        beep = Interval(
+            text='BEEP',
+            xmin=entry['beep'],
+            xmax=entry['beep'] + 0.05
+        )
+        tier.append(beep)
 
-        after_beep = {
-            'label': '',
-            'begin': entry['beep'] + 0.05,
-            'end': entry['segment boundaries'][0]
-        }
-        intervals.append(after_beep)
+        after_beep = Interval(
+            text='',
+            xmin=entry['beep'] + 0.05,
+            xmax=entry['segment boundaries'][0])
+        tier.append(after_beep)
     else:
-        begin_buffer = {
-            'label': '',
-            'begin': entry['sliceBegin'],
-            'end': entry['segment boundaries'][0]
-        }
-        intervals.append(begin_buffer)
+        begin_buffer = Interval(
+            text='',
+            xmin=entry['sliceBegin'],
+            xmax=entry['segment boundaries'][0])
+        tier.append(begin_buffer)
 
 
 def append_end(entry: dict, intervals: list) -> None:
@@ -252,12 +242,16 @@ def generate_word_intervals(table) -> list[Interval]:
         append_beginning(entry, intervals)
 
         words = entry['prompt'].split()
-        boundaries =         
-        for word in words:
+        boundaries = np.linspace(
+            entry['segment boundaries'][0],
+            entry['segment boundaries'][-1],
+            len(words)+3)
+        boundaries = boundaries[1:-1]
+        for i, word in enumerate(words):
             interval = {
                 'label': word,
-                'begin': ,
-                'end': entry['segment boundaries'][-1]
+                'begin': boundaries[i+1],
+                'end': boundaries[i+2]
             }
             intervals.append(interval)
 
@@ -266,8 +260,20 @@ def generate_word_intervals(table) -> list[Interval]:
     return intervals
 
 
-def generate_textgrid(
-        table, filename, config_dict, pronunciation_dict=None) -> None:
+def generate_file_tier(table) -> Tier:
+    files = Tier()
+    for entry in table:
+        file_segment = {
+            'label': entry['filename'],
+            'begin': entry['sliceBegin'],
+            'end': entry['sliceEnd']}
+        files.append(file_segment)
+
+    return files
+
+
+def generate_segments(
+        table, pronunciation_dict=None) -> None:
     # TODO: move the tier generation from here to above and the tier content
     # generation probably to its own function
     """
@@ -285,59 +291,9 @@ def generate_textgrid(
         _description_, by default None
     """
 
-    textgrid = TextGrid()
-    add_tiers_to_textgrid(textgrid, table, config_dict, pronunciation_dict)
-
-    files = []
-    words = []
     segments = []
     for entry in table:
-        file_segment = {
-            'label': entry['filename'],
-            'begin': entry['sliceBegin'],
-            'end': entry['sliceEnd']}
-        files.append(file_segment)
-
-        if 'beep' in entry:
-            begin_buffer = {
-                'label': '',
-                'begin': entry['sliceBegin'],
-                'end': entry['beep']
-            }
-            words.append(begin_buffer)
-            segments.append(begin_buffer)
-
-            beep = {
-                'label': 'BEEP',
-                'begin': entry['beep'],
-                'end': entry['beep'] + 0.05
-            }
-            words.append(beep)
-            segments.append(beep)
-
-            after_beep = {
-                'label': '',
-                'begin': entry['beep'] + 0.05,
-                'end': entry['segment boundaries'][0]
-            }
-            words.append(after_beep)
-            segments.append(after_beep)
-        else:
-            begin_buffer = {
-                'label': '',
-                'begin': entry['sliceBegin'],
-                'end': entry['segment boundaries'][0]
-            }
-            words.append(begin_buffer)
-            segments.append(begin_buffer)
-
-        # For words and utterances one long interval.
-        word = {
-            'label': entry['prompt'],
-            'begin': entry['segment boundaries'][0],
-            'end': entry['segment boundaries'][-1]
-        }
-        words.append(word)
+        append_beginning(entry, segments)
 
         if pronunciation_dict:
             # For segmentation a bunch of segment intervals
@@ -349,30 +305,6 @@ def generate_textgrid(
                 }
                 segments.append(segment)
 
-        end_buffer = {
-            'label': '',
-            'begin': entry['segment boundaries'][-1],
-            'end': entry['sliceEnd']}
-        words.append(end_buffer)
-        segments.append(end_buffer)
+        append_end(entry, segments)
 
-    # After transforming the table into another list of dicts
-    # write the timing segmentation info into a .csv file or buffer.
-    # Construct a 'Segment' Tier from the .csv and write it out
-    # Copy the 'Segment' as 'Phonetic detail' or some such as well.
-    # Likewise (actually first), construct Tiers 'Utterance' and 'Word'
-    if config_dict['flags']['file']:
-        textgrid.interval_tier_from_array("File", files)
-    if config_dict['flags']['utterance']:
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['utterance'], words)
-    if config_dict['flags']['word']:
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['word'], words)
-    if config_dict['flags']['phoneme']:
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['phoneme'], segments)
-    if config_dict['flags']['phone']:
-        textgrid.interval_tier_from_array(
-            config_dict['tier names']['phone'], segments)
-    textgrid.write(filename)
+    return segments
