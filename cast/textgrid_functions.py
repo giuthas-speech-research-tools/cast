@@ -45,8 +45,17 @@ from cast.meta import (check_and_load_aaa_meta,
 pp = pprint.PrettyPrinter(indent=4)
 
 
+def generate_textgrid(table: dict,
+                      out_textgrid: TextGrid,
+                      config_dict: dict,
+                      pronunciation_dict: dict):
+    # TODO: given the timing data in table produce a new TextGrid
+    pass
+
+
 def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
               csv_meta_file: Optional[str] = None) -> None:
+    # TODO: check which tiers the textgrid has and which are requested. supply the missing ones
 
     speaker_id = config_dict['speaker id']
     test = config_dict['test']
@@ -84,6 +93,7 @@ def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
 
 def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
                           pronunciation_dict: dict = None) -> None:
+    # TODO: add requested tiers to the textgrid
     """
     Add Tiers to a TextGrid
 
@@ -187,7 +197,7 @@ def append_end(entry: dict, intervals: list) -> None:
     intervals.append(end_buffer)
 
 
-def generate_utterance_intervals(table) -> list[Interval]:
+def generate_utterance_intervals(table: dict) -> list[Interval]:
     """
     _summary_
 
