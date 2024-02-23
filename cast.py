@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
@@ -47,19 +48,19 @@ def main(args: list):
     """
     command = None
     config_filename = None
-    if args and args[0] in CommandStrings:
+    if args and args[0] in CommandStrings.values():
         command = CommandStrings(args[0])
         config_filename = args.pop()
+        config_dict = read_config_file(config_filename)
+        path = config_dict['data directory']
+
+        process_command(command=command,
+                        path=path,
+                        config_dict=config_dict)
     else:
         print("Did not find a command in the arguments: " +
-              args + ".")
-        print("Accepted commands are: %s", str(list(CommandStrings)))
-    config_dict = read_config_file(config_filename)
-    path = config_dict['data directory']
-
-    process_command(command=command,
-                    path=path,
-                    config_dict=config_dict)
+              str(args) + ".")
+        print(f"Accepted commands are: {', '.join(CommandStrings.values())}")
 
 
 if (len(sys.argv) not in [2, 3] or '-h' in sys.argv):

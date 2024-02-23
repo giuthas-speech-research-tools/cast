@@ -29,7 +29,7 @@
 # citations.bib in BibTeX format.
 #
 """
-Define and process CAST commandline commands.
+Define and process CAST command line commands.
 """
 from enum import Enum
 from pathlib import Path
@@ -42,7 +42,22 @@ from .extract import extract_textgrids
 from .textgrid_functions import add_tiers
 
 
-class CommandStrings(Enum):
+class ExtendedEnum(Enum):
+
+    @classmethod
+    def values(cls) -> list:
+        """
+        Classmethod which returns a list of the Enum's values.
+
+        Returns
+        -------
+        list
+            list of the Enum's values.
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class CommandStrings(ExtendedEnum):
     """
     Commands accepted by CAST as strings.
     """
