@@ -43,6 +43,9 @@ from .textgrid_functions import add_tiers
 
 
 class ExtendedEnum(Enum):
+    """
+    Enum whose values can be listed easily.
+    """
 
     @classmethod
     def values(cls) -> list:
@@ -68,6 +71,18 @@ class CommandStrings(ExtendedEnum):
 
 
 def process_command(command: CommandStrings, path: Path, config_dict: dict):
+    """
+    Run a CAST command.
+
+    Parameters
+    ----------
+    command : CommandStrings
+        The command to be run.
+    path : Path
+        What to run the command on.
+    config_dict : dict
+        Configuration to run the command with.
+    """
 
     if command is CommandStrings.ADD:
         pronunciation_dict = None
