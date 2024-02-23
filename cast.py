@@ -36,25 +36,34 @@ from cast.commands import CommandStrings, process_command
 from cast.configuration import read_config_file
 
 
-def main(args):
+def main(args: list):
+    """
+    Main to run CAST
+
+    Parameters
+    ----------
+    args : list
+        Command line arguments.
+    """
     command = None
     config_filename = None
     if args and args[0] in CommandStrings:
         command = CommandStrings(args[0])
         config_filename = args.pop()
-    elif args:
+    else:
         print("Did not find a command in the arguments: " +
-              args + " Concatenating.")
-        command = CommandStrings.CONCATENATE
-        config_filename = args.pop()
+              args + ".")
+        print("Accepted commands are: %s", str(list(CommandStrings)))
     config_dict = read_config_file(config_filename)
+    path = config_dict['data directory']
 
-    process_command(command=command, config_dict=config_dict)
+    process_command(command=command,
+                    path=path,
+                    config_dict=config_dict)
 
 
-if (len(sys.argv) not in [1, 2, 3] or '-h' in sys.argv):
+if (len(sys.argv) not in [2, 3] or '-h' in sys.argv):
     print("\ncast.py")
-    print("\tusage: cast.py [config-yaml-file]")
     print("\tusage: cast.py add [config-yaml-file]")
     print("\tusage: cast.py concatenate [config-yaml-file]")
     print("\tusage: cast.py extract [config-yaml-file]")

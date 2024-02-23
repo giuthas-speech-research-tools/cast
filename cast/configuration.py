@@ -29,7 +29,7 @@
 # citations.bib in BibTeX format.
 #
 """
-config_file_io handles reading configuration files.
+Load configuration files.
 
 File types handled by this module are strict yaml config files, different types
 of exclusion lists, and pronunciation dictionaries.
@@ -43,7 +43,23 @@ from contextlib import closing
 from pathlib import Path
 from typing import Union
 
-from strictyaml import Bool, Float, Map, Optional, Str, YAMLError, load
+from strictyaml import (
+    Bool, Float, Map, Optional, ScalarValidator, Str, YAMLError, load)
+
+
+class PathValidator(ScalarValidator):
+    """
+    Validate yaml representing a Path.
+
+    Please note that empty fields are interpreted as not available and
+    represented by None. If you want to specify current working directory, use
+    '.'
+    """
+
+    def validate_scalar(self, chunk):
+        if chunk.contents:
+            return Path(chunk.contents)
+        return None
 
 
 def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
@@ -63,9 +79,9 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
             schema = Map({
                 "data source": Str(),
                 "speaker id": Str(),
-                "data directory": Str(),
-                "outputfile": Str(),
-                Optional("output_dirname"): Str(),
+                "data directory": PathValidator(),
+                "outputfile": PathValidator(),
+                Optional("output_dirname"): PathValidator(),
                 "flags": Map({
                     "detect beep": Bool(),
                     "test": Bool()
@@ -84,8 +100,8 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
                     "phoneme": Str(),
                     "phone": Str()
                 }),
-                "exclusion list": Str(),
-                "pronunciation dictionary": Str(),
+                "exclusion list": PathValidator(),
+                "pronunciation dictionary": PathValidator(),
                 "word guess": Map({
                     "begin": Float(),
                     "end": Float()
