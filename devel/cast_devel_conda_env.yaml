@@ -40,6 +40,7 @@ dependencies:
   - pylint >= 2.9
   - strictyaml >= 1.6.1
   - autopep8
+  - icecream
   - pip:
     - licenseheaders
   #   - praat-textgrids >= 1.4
