@@ -30,14 +30,14 @@
 # citations.bib in BibTeX format.
 #
 
-import sys
 import time
 
+from cast.command_line import CastArgumentParser
 from cast.commands import CommandStrings, process_command
 from cast.configuration import read_config_file
 
 
-def main(args: list):
+def main():
     """
     Main to run CAST
 
@@ -46,11 +46,13 @@ def main(args: list):
     args : list
         Command line arguments.
     """
-    command = None
+    cli = CastArgumentParser("CAST")
+
+    command_string = cli.args.command
     config_filename = None
-    if args and args[0] in CommandStrings.values():
-        command = CommandStrings(args[0])
-        config_filename = args.pop()
+    if command_string in CommandStrings.values():
+        command = CommandStrings(command_string)
+        config_filename = cli.args.configuration_filename
         config_dict = read_config_file(config_filename)
         path = config_dict['data directory']
 
@@ -59,25 +61,12 @@ def main(args: list):
                         config_dict=config_dict)
     else:
         print("Did not find a command in the arguments: " +
-              str(args) + ".")
+              cli.args.command + ".")
         print(f"Accepted commands are: {', '.join(CommandStrings.values())}")
-
-
-if (len(sys.argv) not in [2, 3] or '-h' in sys.argv):
-    print("\ncast.py")
-    print("\tusage: cast.py add [config-yaml-file]")
-    print("\tusage: cast.py concatenate [config-yaml-file]")
-    print("\tusage: cast.py extract [config-yaml-file]")
-    print("\tusage: cast.py remove-double-word-boundaries [config-yaml-file]")
-    print("\n\tConcatenates wav files and creates a corresponding TextGrid.")
-    print("\tWrites a huge wav-file, a corresponding textgrid, and")
-    print("\ta metafile to assist in extracting shorter textgrid after annotation.")
-    print("\n\tAll options are provided by the config file which defaults to cast_config.yml.")
-    sys.exit(0)
 
 
 if __name__ == '__main__':
     start_time = time.perf_counter()
-    main(sys.argv[1:])
+    main()
     elapsed_time = time.perf_counter() - start_time
     print(f'Elapsed time was {elapsed_time}.')
