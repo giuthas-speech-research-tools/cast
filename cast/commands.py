@@ -39,6 +39,7 @@ from .concatenate import concatenate_wavs
 
 from .configuration import read_pronunciation_dict
 from .extract import extract_textgrids
+from .path_functions import initialise_dataset
 from .textgrid_functions import add_tiers
 
 
@@ -67,6 +68,7 @@ class CommandStrings(ExtendedEnum):
     ADD = 'add'
     CONCATENATE = 'concatenate'
     EXTRACT = 'extract'
+    INITIALISE = 'init'
     REMOVE_DOUBLE_WORD_BOUNDARIES = 'remove-double-word-boundaries'
 
 
@@ -84,7 +86,9 @@ def process_command(command: CommandStrings, path: Path, config_dict: dict):
         Configuration to run the command with.
     """
 
-    if command is CommandStrings.ADD:
+    if command is CommandStrings.INITIALISE:
+        initialise_dataset(path, config_dict)
+    elif command is CommandStrings.ADD:
         pronunciation_dict = None
         if not config_dict['flags']['only words']:
             pronunciation_dict = read_pronunciation_dict(
