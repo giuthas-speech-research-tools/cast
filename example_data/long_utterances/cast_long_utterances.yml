@@ -2,7 +2,7 @@
 data source: csv
 
 # Speaker id is used in the output csv file.
-speaker id: Judith
+speaker id: P1
 # This is where we read the wavs and metadata from.
 data directory: example_data/long_utterances/
 
@@ -18,7 +18,6 @@ tiers:
   phone: False
 
 tier names:
-  file: File
   utterance: Utterance
   word: Word
   phoneme: Phoneme
