@@ -27,7 +27,7 @@ tier_names:
 # on both prompts and file names.
 exclusion_list: 
 # Consists of words followed by their segments in arbitrary transcription.  
-pronunciation_dictionary: local_data/haitian/haitian_creole_pronunciation_dictionary.csv
+pronunciation_dictionary: [data_directory]/long_utterances_example_pronunciation_dictionary.csv
 
 # Start and end points of the guess where the word or speech might 
 # be in normalised time. If beep detection is used the normalised
