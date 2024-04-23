@@ -121,13 +121,13 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
     if "pronunciation_dictionary" in data and data["pronunciation_dictionary"]:
         if "[data_directory]" in data["pronunciation_dictionary"]:
             data["pronunciation_dictionary"].replace(
-                "[data_directory]", data["data_directory"])
+                "[data_directory]", data["data_directory"]+"/")
     data["pronunciation_dictionary"] = Path(data["pronunciation_dictionary"])
 
     if "exclusion_list" in data and data["exclusion_list"]:
         if "[data_directory]" in data["exclusion_list"]:
             data["exclusion_list"].replace(
-                "[data_directory]", data["data_directory"])
+                "[data_directory]", data["data_directory"]+"/")
     data["exclusion_list"] = Path(data["exclusion_list"])
 
     return config_dict.data
