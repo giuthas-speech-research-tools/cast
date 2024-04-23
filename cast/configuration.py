@@ -77,13 +77,13 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
     if filepath.is_file():
         with closing(open(filepath, 'r', encoding="utf-8")) as yaml_file:
             schema = Map({
-                "data source": Str(),
-                "speaker id": Str(),
-                "data directory": PathValidator(),
+                "data_source": Str(),
+                "speaker_id": Str(),
+                "data_directory": PathValidator(),
                 "outputfile": PathValidator(),
                 Optional("output_dirname"): PathValidator(),
                 "flags": Map({
-                    "detect beep": Bool(),
+                    "detect_beep": Bool(),
                     "test": Bool()
                 }),
                 "tiers": Map({
@@ -93,16 +93,16 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
                     "phoneme": Bool(),
                     "phone": Bool()
                 }),
-                "tier names": Map({
+                "tier_names": Map({
                     "file": Str(),
                     "word": Str(),
                     "utterance": Str(),
                     "phoneme": Str(),
                     "phone": Str()
                 }),
-                "exclusion list": PathValidator(),
-                "pronunciation dictionary": PathValidator(),
-                "word guess": Map({
+                "exclusion_list": PathValidator(),
+                "pronunciation_dictionary": PathValidator(),
+                "word_guess": Map({
                     "begin": Float(),
                     "end": Float()
                 })
@@ -156,13 +156,13 @@ def read_na_list(dirpath: Path) -> list[str]:
 
 def read_pronunciation_dict(filepath: Union[Path, str]) -> dict:
     """
-    Read the pronuciation dictionary and return it as a dict.
+    Read the pronunciation dictionary and return it as a dict.
 
     The file is assumed to be in tab separated format and to 
     contain one word on each line followed by the X-SAMPA transcription
     of the expected pronunciation (phonological transcription).
 
-    Returns a dict where each entry is a list of phonomes.
+    Returns a dict where each entry is a list of phonemes.
     """
     if isinstance(filepath, str):
         filepath = Path(filepath)
