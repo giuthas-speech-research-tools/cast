@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2023 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -62,11 +62,11 @@ def band_pass(sampling_frequency):
     low = 950.0 / nyq
     high = 1050.0 / nyq
     sos = butter(1, [low, high], btype='band', output='sos')
-    return(sos)
+    return (sos)
 
 
-def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float, 
-                            b, a, name:str) -> Tuple[float, bool]:
+def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float,
+                           b, a, name: str) -> Tuple[float, bool]:
     """
     Find a 1kHz 50ms beep at the beginning of a sound sample.
 
@@ -128,7 +128,8 @@ def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float,
     # Old int_time was used to almost correct the shift caused by windowing.
     # int_time = np.linspace(0, float(len(hp_signal) +
     # (window_length%2 - 1)/2.0)/fs, len(int_signal))
-    int_time = np.linspace(0, float(len(hp_signal))/sampling_frequency, len(hp_signal))
+    int_time = np.linspace(0, float(len(hp_signal)) /
+                           sampling_frequency, len(hp_signal))
     int_signal[int_time < 1] = -80
 
     # First form a rough estimate of where the beep is by detecting the first
@@ -150,7 +151,8 @@ def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float,
 
     zero_crossings = np.where(
         np.diff(np.signbit(frames[beep_approx_index:roi_end])))[0]
-    beep_index = beep_approx_index + zero_crossings[0] + 1 - int(.001*sampling_frequency)
+    beep_index = beep_approx_index + \
+        zero_crossings[0] + 1 - int(.001*sampling_frequency)
     beep = int_time[beep_index]
 
     # check if the energy before the beep begins is less
