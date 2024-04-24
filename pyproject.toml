@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "cast"
+version = "0.1.0"
+description = "CAST - Computer Assisted Segmentation Tools"
+authors = ["Pertti Palo <giuthas@gmail.com>"]
+license = "GPL-3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[project.scripts]
+cast = "cast:run_cli"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
