@@ -6,9 +6,11 @@ authors = [
     {name = "Pertti Palo", email = "giuthas@gmail.com"}
 ]
 license = "GPL-3.0"
-readme = "README.markdown"
+readme = "README.md"
 requires-python = ">=3.10,<3.13"
-dependencies = []
+
+[dependencies]
+python = ">=3.10,<3.13"
 
 [project.scripts]
 cast = "source.cast:run_cli"
@@ -16,7 +18,7 @@ computer-assisted-segmentation-tools = "source.cast:run_cli"
 
 [tool.pixi.project]
 channels = ["default", "conda-forge"]
-platforms = ["linux-64"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
 [build-system]
 requires = ["hatchling"]
