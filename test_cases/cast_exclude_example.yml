@@ -1,5 +1,5 @@
 ##
-## Copyright (c) 2022-2023 Pertti Palo.
+## Copyright (c) 2022-2024 Pertti Palo.
 ##
 ## This file is part of Computer Assisted Segmentation Tools 
 ## (see https://github.com/giuthas-speech-research-tools/cast/).
@@ -34,14 +34,13 @@ prompts:
   - tap test ..
   - water swallow
 
-# Recordings where the prompt contains one of these strings 
-# will be skipped.
+# Recordings where the prompt contains one of these strings will be skipped.
 parts of prompts:
   - biteplate
   - tap test
   - water swallow
 
-# Recordings where the filename (without extenstion) matches
-# these strings will be skipped.
+# Recordings where the filename (without extension) matches these strings will
+# be skipped.
 files:
   - File005
