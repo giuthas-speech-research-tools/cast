@@ -48,6 +48,13 @@ CAST is going to be re-organised a bit in the very near future (during autumn of
 
 ## Installation
 
+### New ways while waiting for upload to pypi
+
+- Ask Pertti for the wheel files and install from them or
+- Do a [developer install](docs/Development_guide.markdown#install-cast-in-development-mode-)
+
+### Old way
+
 Following steps should lead to a working installation. Please, let me know if
 anything doesn't work. I have only very superficially tested installation on
 Linux and not at all on any other systems.
@@ -64,8 +71,8 @@ Linux and not at all on any other systems.
 
 ## Files and directories
 
-- cast/ is the directory that contains most of the processing logic.
-- cast.py is the commandline interface for CAST.
+- source/cast/ is the directory that contains most of the processing logic.
+- `cast` or `computer-assisted-segmentation-tools` is the commandline interface for CAST.
 - .gitignore tells git which directories and files to ignore.
 - local_files/ is not included in the distribution, but it is ignored by git. If
   you are working on CAST with git, this is the place to put your local test

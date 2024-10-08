@@ -39,8 +39,8 @@ from pathlib import Path
 import numpy as np
 from textgrids import TextGrid, Interval, Tier
 
-from cast.meta import (check_and_load_aaa_meta,
-                       check_and_load_csv_meta, check_and_load_rasl_meta)
+from .meta import (
+    check_and_load_aaa_meta, check_and_load_csv_meta, check_and_load_rasl_meta)
 
 pp = pprint.PrettyPrinter(indent=4)
 

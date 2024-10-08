@@ -40,7 +40,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 def read_results_csv(results_file: Path):
-    """Read data written by cast concatenate from a csv-formated file."""
+    """Read data written by computer-assisted-segmentation-tools concatenate from a csv-formated file."""
     with closing(open(results_file, 'r')) as csvfile:
         reader = csv.DictReader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
         table = [row for row in reader]

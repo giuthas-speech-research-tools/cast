@@ -38,7 +38,7 @@ import numpy as np
 # wav file handling
 import scipy.io.wavfile as sio_wavfile
 
-from cast.meta.cast_meta import get_token_list
+from .meta.cast_meta import get_token_list
 
 from .audio_processing import detect_beep_and_speech, high_pass
 from .textgrid_functions import generate_textgrid
