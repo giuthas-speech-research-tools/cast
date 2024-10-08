@@ -18,6 +18,9 @@ correct typos in the transcription -- at least on the phonological level -- and
 a good deal less carpal tunnel strain because of reduced number of mouse clicks.
 And a significantly more relaxed feel about the segmentation process in general.
 
+CAST *is* aware that data beyond simple audio exist and will include features in
+the future that take this into account.
+
 ## Roadmap to 1.0
 
 CAST is going to be re-organised a bit in the very near future (during autumn of
