@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022-2023 Pertti Palo.
+# Copyright (c) 2022-2024 Pertti Palo.
 #
 # This file is part of Computer Assisted Segmentation Tools 
 # (see https://github.com/giuthas-speech-research-tools/cast/).

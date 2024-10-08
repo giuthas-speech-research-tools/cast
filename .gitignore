@@ -1,5 +1,7 @@
-# vscode configuration
+# IDE and other configuration
 .vscode/
+.idea/
+.pixi/
 
 # local files
 local_data
