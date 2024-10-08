@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022-2024 Pertti Palo.
 #
-# This file is part of Computer Assisted Segmentation Tools 
+# This file is part of Computer Assisted Segmentation Tools
 # (see https://github.com/giuthas-speech-research-tools/cast/).
 #
 # This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,10 @@
 # articles listed in README.markdown. They can also be found in
 # citations.bib in BibTeX format.
 #
+"""
+Main API of CAST - Computer Assisted Segmentation Tools
+"""
+
 from .audio_processing import high_pass, high_pass_50, detect_beep_and_speech
 from .clean_textgrids import remove_empty_intervals_from_textgrids
 from .cli import run_cli
