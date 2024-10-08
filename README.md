@@ -4,10 +4,10 @@ Computer Assisted Segmentation Tools (CAST) is a helper toolkit for phonetic
 analysis. Based on config files and metadata it generates a dumb segmentation
 that can then be adjusted in Praat or other TextGrid editing programs.
 
-CAST *does not* do forced alignment. There is no acoustic analysis of speech
-under the hood, only some adjustable heuristics for selecting a reasonable guess
-for where the speech is for the utterance and word levels and then a totally
-rule-based segmentation based on a pronunciation dictionary.
+CAST *does not* do forced alignment. There is no acoustic (nor articulatory)
+analysis of speech under the hood, only some adjustable heuristics for selecting
+a reasonable guess for where the speech is for the utterance and word levels and
+then a totally rule-based segmentation based on a pronunciation dictionary.
 
 CAST *does* provide a segmentation template that is meant to be easy for a human
 annotator to adjust. For this reason all automatically generated segments are of
@@ -15,18 +15,17 @@ equal length within a given word.
 
 CAST *does* do the writing and boundary creation for you. No need to go back and
 correct typos in the transcription -- at least on the phonological level -- and
-a good deal less carpal tunnel strain because of reduced number of mouse
-clicks. And a significantly more relaxed feel about the segmentation process in
-general.
+a good deal less carpal tunnel strain because of reduced number of mouse clicks.
+And a significantly more relaxed feel about the segmentation process in general.
 
 ## Roadmap to 1.0
 
-CAST is going to be re-organised a bit in the very near future (during September
-2023 if nothing weird happens). Version 1.0 will include:
+CAST is going to be re-organised a bit in the very near future (during autumn of
+2024 if nothing weird happens). Version 1.0 will include:
 
 - Four commandline commands:
   - `add` which add Tiers to TextGrids up to the specified level (see below).
-    `add` will also generete the TextGrids if they do not already exist.
+    `add` will also generate the TextGrids if they do not already exist.
     - The Tier levels will be L0=[File], L1=[Utterance], L2=Word, L3=Phonemes,
       L4=Phones. Levels whose names are in brackets can be turned off as a
       configuration option. All preceding levels (that haven't been turned off)
@@ -71,7 +70,7 @@ Linux and not at all on any other systems.
 - cast_exclude_example.yml is an example of an exclusion list. The file is
   commented to make it easier to create your own based on it. To avoid a host of
   issues, the format is Strict YAML rather than regular YAML. Refer to
-  documentation [https://hitchdev.com/strictyaml/](here) for details of the
+  documentation [here](https://hitchdev.com/strictyaml/) for details of the
   format and the file itself for how fields are handled.
 - cast_stable_conda_env.yaml is the specification for the conda/python virtual
   environment in which CAST runs. Probably easiest to build with mamba rather
@@ -94,8 +93,8 @@ examples included with CAST.
 To concatenate, run either `python cast.py config.yaml` or `python cast.py
 concatenate config.yaml`.
 
-DEPRACATION NOTICE: The default status of the concatenate command should already
-be considered depracated. In future, CAST will most likely be integrated into
+DEPRECATION NOTICE: The default status of the concatenate command should already
+be considered deprecated. In the future, CAST will most likely be integrated into
 SATKIT and the default will be to create the individual TextGrids directly with
 pre-generated (dumb) segmentation. This is because SATKIT makes it easy to edit
 a lot of individual recordings without needing to do the 'select objects - open
