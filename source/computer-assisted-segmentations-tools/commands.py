@@ -51,12 +51,12 @@ class ExtendedEnum(Enum):
     @classmethod
     def values(cls) -> list:
         """
-        Classmethod which returns a list of the Enum's values.
+        Class method which returns a list of the Enum's values.
 
         Returns
         -------
         list
-            list of the Enum's values.
+            A list of the Enum's values.
         """
         return list(map(lambda c: c.value, cls))
 
@@ -104,7 +104,8 @@ def process_command(command: CommandStrings, path: Path, config_dict: dict):
     elif command is CommandStrings.REMOVE_DOUBLE_WORD_BOUNDARIES:
         if not config_dict['output_dirname']:
             print(
-                'Fatal: No output directory for new textgrids specified in config file.')
+                'Fatal: No output directory for new textgrids specified in '
+                'config file.')
         remove_empty_intervals_from_textgrids(
             Path(path), Path(config_dict['output_dirname']))
     elif command is CommandStrings.EXTRACT:

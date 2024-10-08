@@ -24,7 +24,7 @@ def widen_help_formatter(formatter, total_width=140, syntax_width=35):
     return formatter
 
 
-class CastArgumentParser():
+class CastArgumentParser:
     """
     This class is the root class for CAST command line interfaces.
 
@@ -34,7 +34,7 @@ class CastArgumentParser():
 
     def __init__(self, description):
         """
-        Setup a command line interface with the given description.
+        Set up a command line interface with the given description.
 
         Sets up the parsers and runs it, and also sets up logging. Description
         is what this version will be called if called with -h or --help.
