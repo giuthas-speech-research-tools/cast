@@ -80,7 +80,7 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
                 "data_source": Str(),
                 "speaker_id": Str(),
                 "data_directory": PathValidator(),
-                "outputfile": PathValidator(),
+                Optional("outputfile", default=None): PathValidator(),
                 Optional("output_dirname"): PathValidator(),
                 "flags": Map({
                     "detect_beep": Bool(),
@@ -88,22 +88,22 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
                     "test": Bool(),
                 }),
                 "tiers": Map({
-                    "file": Bool(),
-                    "utterance": Bool(),
-                    "word": Bool(),
-                    "phoneme": Bool(),
-                    "phone": Bool()
+                    Optional("file", default=False): Bool(),
+                    Optional("utterance", default=True): Bool(),
+                    Optional("word", default=True): Bool(),
+                    Optional("phoneme", default=True): Bool(),
+                    Optional("phone", default=True): Bool()
                 }),
                 "tier_names": Map({
-                    "file": Str(),
-                    "utterance": Str(),
-                    "word": Str(),
-                    "phoneme": Str(),
-                    "phone": Str()
+                    Optional("file", default=None): Str(),
+                    Optional("utterance", default=None): Str(),
+                    Optional("word", default=None): Str(),
+                    Optional("phoneme", default=None): Str(),
+                    Optional("phone", default=None): Str()
                 }),
-                "exclusion_list": Str(),
-                "pronunciation_dictionary": Str(),
-                "word_guess": Map({
+                Optional("exclusion_list", default=None): Str(),
+                Optional("pronunciation_dictionary", default=None): Str(),
+                Optional("word_guess"): Map({
                     "begin": Float(),
                     "end": Float()
                 })
