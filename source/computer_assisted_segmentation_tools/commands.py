@@ -34,9 +34,9 @@ Define and process CAST command line commands.
 from enum import Enum
 from pathlib import Path
 import sys
+
 from .clean_textgrids import remove_empty_intervals_from_textgrids
 from .concatenate import concatenate_wavs
-
 from .configuration import read_pronunciation_dict
 from .extract import extract_textgrids
 from .path_functions import initialise_dataset
