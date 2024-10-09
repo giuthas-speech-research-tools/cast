@@ -33,7 +33,6 @@ Functions for generating and modifying TextGrid objects.
 """
 import pprint
 import sys
-from typing import Optional
 from pathlib import Path
 
 from icecream import ic
@@ -41,6 +40,7 @@ from icecream import ic
 import numpy as np
 from textgrids import TextGrid, Interval, Tier
 
+from .configuration_classes import ExclusionList
 from .meta import (
     check_and_load_aaa_meta, check_and_load_csv_meta, check_and_load_rasl_meta
 )
@@ -60,8 +60,10 @@ def generate_textgrid(
 
 
 def add_tiers(
-        path, config_dict: dict, pronunciation_dict: dict = None,
-        csv_meta_file: Optional[str] = None
+        path, config_dict: dict,
+        pronunciation_dict: dict | None = None,
+        csv_meta_file: str | None = None,
+        exclusion_list: ExclusionList | None = None,
 ) -> None:
     # TODO: check which tiers the textgrid has and which are requested. supply
     # the missing ones
@@ -86,7 +88,6 @@ def add_tiers(
         if data_source == 'AAA':
             table = check_and_load_aaa_meta(
                 speaker_id, path, test)
-            ic(table)
         elif data_source == 'RASL':
             table = check_and_load_rasl_meta(speaker_id, path, test)
         elif data_source == 'csv':
@@ -95,6 +96,8 @@ def add_tiers(
         else:
             print(f"Unknown data source: {data_source}. Exiting.")
             sys.exit()
+
+        apply
 
         for item in table:
             textgrid_file = path / (item['filename'] + ".TextGrid")
@@ -145,9 +148,9 @@ def add_tiers_to_textgrid(
             # up.
             earliest_speech = params['begin'] + .058
             seg_begin = earliest_speech + \
-                (params['end'] - earliest_speech) * begin_coeff
+                        (params['end'] - earliest_speech) * begin_coeff
             seg_end = earliest_speech + \
-                (params['end'] - earliest_speech) * end_coeff
+                      (params['end'] - earliest_speech) * end_coeff
             boundaries = np.linspace(
                 seg_begin, seg_end, len(transcription) + 3)
             boundaries = boundaries[1:-1]
@@ -157,18 +160,17 @@ def add_tiers_to_textgrid(
                 f"Word \'{params['prompt']}\' missing from pronunciation dict.")
     else:
         print(f"Generating boundaries for {params['prompt']}.")
-
+        ic(params)
         earliest_speech = params['begin'] + .058
         seg_begin = earliest_speech + \
-            (params['end'] - earliest_speech) * begin_coeff
+                    (params['end'] - earliest_speech) * begin_coeff
         seg_end = earliest_speech + \
-            (params['end'] - earliest_speech) * end_coeff
+                  (params['end'] - earliest_speech) * end_coeff
         boundaries = [seg_begin, seg_end]
         params['segment boundaries'] = boundaries
 
     if config_dict['tiers']['utterance']:
         utterance = generate_utterance_dicts(params)
-        ic(utterance)
         textgrid.interval_tier_from_array(
             config_dict['tier_names']['utterance'], utterance)
     if config_dict['tiers']['word']:

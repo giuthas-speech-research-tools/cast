@@ -35,6 +35,7 @@
 from .command_line import CastArgumentParser
 from .commands import CommandStrings, process_command
 from .configuration import read_config_file
+from .exclusion import load_exclusion_list
 
 
 def run_cli():
@@ -49,16 +50,21 @@ def run_cli():
     cli = CastArgumentParser("CAST")
 
     command_string = cli.args.command
-    config_filename = None
     if command_string in CommandStrings.values():
         command = CommandStrings(command_string)
         config_filename = cli.args.configuration_filename
         config_dict = read_config_file(config_filename)
+        if config_dict["exclusion_list"]:
+            exclusion_filename = config_dict["exclusion_list"]
+        else:
+            exclusion_filename = cli.args.exclusion_filename
+        exclusion_list = load_exclusion_list(exclusion_filename)
         path = config_dict['data_directory']
 
         process_command(command=command,
                         path=path,
-                        config_dict=config_dict)
+                        config_dict=config_dict,
+                        exclusion_list=exclusion_list)
     else:
         print("Did not find a command in the arguments: " +
               cli.args.command + ".")

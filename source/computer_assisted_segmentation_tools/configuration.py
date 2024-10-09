@@ -152,23 +152,6 @@ def read_exclusion_list(filepath: Path) -> dict:
     return exclusion_dict
 
 
-def read_na_list(dirpath: Path) -> list[str]:
-    """
-    Read the old style exclusion list from na_list.txt.
-
-    If no exclusion list file is present, return an empty array
-    after warning the user.
-    """
-    na_file = dirpath.joinpath('na_list.txt')
-    if na_file.is_file():
-        na_list = [line.rstrip('\n')
-                   for line in open(na_file, encoding="utf-8")]
-    else:
-        na_list = []
-        print("Didn't find na_list.txt. Proceeding anyhow.")
-    return na_list
-
-
 def read_pronunciation_dict(filepath: Union[Path, str]) -> dict:
     """
     Read the pronunciation dictionary and return it as a dict.

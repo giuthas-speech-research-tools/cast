@@ -38,6 +38,7 @@ import sys
 from .clean_textgrids import remove_empty_intervals_from_textgrids
 from .concatenate import concatenate_wavs
 from .configuration import read_pronunciation_dict
+from .configuration_classes import ExclusionList
 from .extract import extract_textgrids
 from .path_functions import initialise_dataset
 from .textgrid_functions import add_tiers
@@ -72,7 +73,10 @@ class CommandStrings(ExtendedEnum):
     REMOVE_DOUBLE_WORD_BOUNDARIES = 'remove-double-word-boundaries'
 
 
-def process_command(command: CommandStrings, path: Path, config_dict: dict):
+def process_command(
+        command: CommandStrings, path: Path, config_dict: dict,
+        exclusion_list: ExclusionList | None = None
+) -> None:
     """
     Run a CAST command.
 
@@ -84,6 +88,9 @@ def process_command(command: CommandStrings, path: Path, config_dict: dict):
         What to run the command on.
     config_dict : dict
         Configuration to run the command with.
+    exclusion_list : Optional[ExclusionList]
+        Exclusion list to apply to the list of recordings to potentially
+        process.
     """
 
     if command is CommandStrings.INITIALISE:
@@ -93,7 +100,8 @@ def process_command(command: CommandStrings, path: Path, config_dict: dict):
         if not config_dict['flags']['only_words']:
             pronunciation_dict = read_pronunciation_dict(
                 config_dict['pronunciation dictionary'])
-        add_tiers(path, config_dict, pronunciation_dict=pronunciation_dict)
+        add_tiers(path, config_dict, pronunciation_dict=pronunciation_dict,
+                  exclusion_list=exclusion_list)
     elif command is CommandStrings.CONCATENATE:
         pronunciation_dict = None
         if not config_dict['flags']['only words']:

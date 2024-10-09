@@ -40,18 +40,20 @@ from typing import Union
 
 from icecream import ic
 
-from strictyaml import (Map, Optional, Seq, Str,
-                        YAMLError, load)
+from strictyaml import (
+    Map, Optional, Seq, Str,
+    YAMLError, load
+)
 
 from .configuration_classes import ExclusionList
-
 
 _logger = logging.getLogger('cast.configuration')
 
 
 def apply_exclusion_list(
         recordings: list[dict],
-        exclusion_list: ExclusionList) -> None:
+        exclusion_list: ExclusionList
+) -> None:
     """
     Apply exclusion list to the list of Recordings.
 
@@ -86,7 +88,7 @@ def apply_exclusion_list(
             recording['excluded'] = True
 
 
-def load_exclusion_list(filepath: Union[Path, str]) -> ExclusionList:
+def load_exclusion_list(filepath: Union[Path, str]) -> ExclusionList | None:
     """
     If it exists, load the exclusion list from the given path.
 
@@ -98,9 +100,10 @@ def load_exclusion_list(filepath: Union[Path, str]) -> ExclusionList:
 
     Returns
     -------
-    ExclusionList
-        The exclusion list. If the file was a .csv file, there will be only
-        files excluded, a .yaml gives more options.
+    ExclusionList|None
+        The exclusion list or None if one was not read. If the file was a .csv
+        file, there will be only files excluded, a .yaml or .yml gives more
+        options.
     """
     if isinstance(filepath, str):
         filepath = Path(filepath)
