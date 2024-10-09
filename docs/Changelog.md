@@ -62,6 +62,7 @@ In addition:
 
 ### Added
 
+- `add` applies exclusion list before processing files.
 - `add` moves existing textgrids to a safe directory before creating new tiers
   and writing the new textgrids in the original directory.
 - `add` now does incremental adding of tiers.
@@ -70,7 +71,8 @@ In addition:
 
 - File tier level is now by default off even if it is not explicitly set in the
   configuration.
-- Similarly, Phoneme and Phone are by default on.
+- Similarly, Utterance, Word, Phoneme, and Phone are by default on.
+- Removed read_na_list which was used to read old style exclusion text files.
 
 ## [0.1.0] 2024-10-08
 
