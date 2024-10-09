@@ -43,8 +43,7 @@ from icecream import ic
 from strictyaml import (Map, Optional, Seq, Str,
                         YAMLError, load)
 
-from satkit.configuration import ExclusionList
-from satkit.constants import SatkitSuffix, SourceSuffix
+from .configuration_classes import ExclusionList
 
 
 _logger = logging.getLogger('cast.configuration')
@@ -106,10 +105,10 @@ def load_exclusion_list(filepath: Union[Path, str]) -> ExclusionList:
     if isinstance(filepath, str):
         filepath = Path(filepath)
 
-    if filepath.suffix == SatkitSuffix.CONFIG:
+    if filepath.suffix in ('.yaml', '.yml'):
         return read_exclusion_list_from_yaml(filepath)
 
-    if filepath.suffix == SourceSuffix.CSV:
+    if filepath.suffix == '.csv':
         return read_file_exclusion_list_from_csv(filepath)
 
 
