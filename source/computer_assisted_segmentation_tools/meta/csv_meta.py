@@ -34,9 +34,9 @@ from pathlib import Path
 import sys
 
 
-def add_prompt_info(table: dict, csv_meta_file: Path):
+def add_prompt_info(table: list[dict], csv_meta_file: Path):
     """
-    _summary_
+    Read AAA prompt file and add metadata from it to the table.
 
     Parameters
     ----------
@@ -61,7 +61,7 @@ def check_and_load_csv_meta(speaker_id: str, directory: Path,
     Currently not supported.
 
     This is a concept for providing initial metadata as a csv file that will
-    be used for specifying prompts/ortographic content for each sound file.
+    be used for specifying prompts/orthographic content for each sound file.
 
     Parameters
     ----------
@@ -82,8 +82,8 @@ def check_and_load_csv_meta(speaker_id: str, directory: Path,
     # Since we are concerned with audio annotation, wav files
     # determine the name list for all other files.
     wav_files = sorted(directory.glob('*.wav'))
-    if (len(wav_files) < 1):
-        print(f"Didn't find any sound files to concatanate in {directory}.")
+    if len(wav_files) < 1:
+        print(f"Didn't find any sound files to concatenate in {directory}.")
         sys.exit()
 
     # for test runs do only first ten files:
@@ -91,8 +91,8 @@ def check_and_load_csv_meta(speaker_id: str, directory: Path,
         wav_files = wav_files[:10]
 
     prompt_files = sorted(directory.glob('*.txt'))
-    if (len(prompt_files) < 1):
-        print("Didn't find any prompt files in {dirname}.")
+    if len(prompt_files) < 1:
+        print(f"Didn't find any prompt files in {directory}.")
         sys.exit()
 
     # initialise table with the speaker_id and name repeated, wav_file name
