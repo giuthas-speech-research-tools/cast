@@ -1,6 +1,6 @@
 [project]
 name = "computer-assisted-segmentation-tools"
-version = "0.1.0"
+version = "0.2.0"
 description = "Add a short description here"
 authors = ["Pertti Palo <giuthas@gmail.com>"]
 channels = ["conda-forge"]
