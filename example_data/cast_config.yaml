@@ -35,7 +35,7 @@ data_source: AAA
 # Speaker id is used in the output csv file.
 speaker_id: P1
 # This is where we read the wavs and metadata from.
-data_directory: single_words/unprocessed/
+data_directory: single_words/data/
 # This will be used as the name of the output wav and TextGrid.
 outputfile: single_words/added_utterance
 
