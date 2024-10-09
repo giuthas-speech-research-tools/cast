@@ -90,7 +90,7 @@ def process_command(command: CommandStrings, path: Path, config_dict: dict):
         initialise_dataset(path, config_dict)
     elif command is CommandStrings.ADD:
         pronunciation_dict = None
-        if not config_dict['flags']['only words']:
+        if not config_dict['flags']['only_words']:
             pronunciation_dict = read_pronunciation_dict(
                 config_dict['pronunciation dictionary'])
         add_tiers(path, config_dict, pronunciation_dict=pronunciation_dict)

@@ -54,7 +54,7 @@ def run_cli():
         command = CommandStrings(command_string)
         config_filename = cli.args.configuration_filename
         config_dict = read_config_file(config_filename)
-        path = config_dict['data directory']
+        path = config_dict['data_directory']
 
         process_command(command=command,
                         path=path,

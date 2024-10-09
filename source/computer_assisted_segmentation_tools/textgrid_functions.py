@@ -36,6 +36,8 @@ import sys
 from typing import Optional
 from pathlib import Path
 
+from icecream import ic
+
 import numpy as np
 from textgrids import TextGrid, Interval, Tier
 
@@ -55,15 +57,16 @@ def generate_textgrid(table: dict,
 
 def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
               csv_meta_file: Optional[str] = None) -> None:
-    # TODO: check which tiers the textgrid has and which are requested. supply the missing ones
+    # TODO: check which tiers the textgrid has and which are requested. supply
+    # the missing ones
 
-    speaker_id = config_dict['speaker id']
-    test = config_dict['test']
+    speaker_id = config_dict['speaker_id']
+    test = config_dict['flags']['test']
 
     if isinstance(path, str):
         path = Path(path)
 
-    if path.is_file:
+    if path.is_file():
         if path.suffix == ".TextGrid":
             textgrid = TextGrid(str(path))
             add_tiers_to_textgrid(textgrid, config_dict, pronunciation_dict)
@@ -71,8 +74,8 @@ def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
         else:
             print(f"Unknown file type: {path.suffix}. Exiting.")
             sys.exit()
-    elif path.is_dir:
-        data_source = config_dict['data source']
+    elif path.is_dir():
+        data_source = config_dict['data_source']
         table = {}
         if data_source == 'AAA':
             table = check_and_load_aaa_meta(
@@ -86,9 +89,15 @@ def add_tiers(path, config_dict: dict, pronunciation_dict: dict = None,
             print(f"Unknown data source: {data_source}. Exiting.")
             sys.exit()
         for item in table:
-            textgrid = TextGrid((item['filename'] + ".TextGrid"))
+            ic(item)
+            textgrid_file = path.with_name(item['filename'] + ".TextGrid")
+            if textgrid_file.is_file():
+                textgrid = TextGrid(textgrid_file)
+            else:
+                textgrid = TextGrid()
             add_tiers_to_textgrid(textgrid, config_dict, pronunciation_dict)
-            textgrid.write((item['filename'] + ".TextGrid"))
+            ic(textgrid_file)
+            textgrid.write(textgrid_file)
 
 
 def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
@@ -106,10 +115,12 @@ def add_tiers_to_textgrid(textgrid: TextGrid, table: list, config_dict: dict,
     config_dict : Dict
         Configuration dictionary
     pronunciation_dict : Dict, optional
-        Pronunciation dictionary -- not needed if only generating to the word level, by default None
+        Pronunciation dictionary -- not needed if only generating to the word
+        level, by default None
     """
-    begin_coeff = config_dict['word guess']['begin']
-    end_coeff = config_dict['word guess']['end']
+    ic(config_dict)
+    begin_coeff = config_dict['word_guess']['begin']
+    end_coeff = config_dict['word_guess']['end']
 
     for entry in table:
         if pronunciation_dict:

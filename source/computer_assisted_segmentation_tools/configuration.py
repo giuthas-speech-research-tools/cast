@@ -84,7 +84,8 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
                 Optional("output_dirname"): PathValidator(),
                 "flags": Map({
                     "detect_beep": Bool(),
-                    "test": Bool()
+                    "only_words": Bool(),
+                    "test": Bool(),
                 }),
                 "tiers": Map({
                     "file": Bool(),
@@ -95,8 +96,8 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
                 }),
                 "tier_names": Map({
                     "file": Str(),
-                    "word": Str(),
                     "utterance": Str(),
+                    "word": Str(),
                     "phoneme": Str(),
                     "phone": Str()
                 }),
