@@ -21,6 +21,8 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+- CAST will soon be available on pypi.
+
 As mentioned in the README these are planned features:
 - `add` which add Tiers to TextGrids up to the specified level (see below).
   `add` will also generate the TextGrids if they do not already exist.
@@ -46,15 +48,29 @@ In addition:
 ### Changed 
 
 - `add` currently writes the TextGrids in the original data directory. This
-  maybe changed in the future, but is pending on SATKIT being able to properly
-  edit TextGrids because Praat doesn't have a very easy time with TextGrids and
-  wavs living in separate directories.
+  maybe changed in the future or become optional, but is pending on SATKIT being
+  able to properly edit TextGrids because Praat doesn't have a very easy time with
+  TextGrids and wavs living in separate directories.
 
 
 ### Removed
 
 - Lots of old code, so please don't rely on the API staying very stable before
   version 1.0.
+
+## [0.2.0]
+
+### Added
+
+- `add` moves existing textgrids to a safe directory before creating new tiers
+  and writing the new textgrids in the original directory.
+- `add` now does incremental adding of tiers.
+
+### Removed
+
+- File tier level is now by default off even if it is not explicitly set in the
+  configuration.
+- Similarly, Phoneme and Phone are by default on.
 
 ## [0.1.0] 2024-10-08
 
