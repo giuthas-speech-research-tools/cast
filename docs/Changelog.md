@@ -43,7 +43,7 @@ In addition:
 - Support for beep detection (go-signal in delayed naming experiments), and
   automatically adding the relevant intervals in the TextGrids.
 
-## Changed 
+### Changed 
 
 - `add` currently writes the TextGrids in the original data directory. This
   maybe changed in the future, but is pending on SATKIT being able to properly
