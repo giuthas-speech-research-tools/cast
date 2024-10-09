@@ -28,8 +28,10 @@
 # articles listed in README.markdown. They can also be found in
 # citations.bib in BibTeX format.
 #
+"""
+Audio processing functions.
+"""
 
-# Built in packages
 import logging
 from typing import Tuple
 
@@ -62,7 +64,7 @@ def band_pass(sampling_frequency):
     low = 950.0 / nyq
     high = 1050.0 / nyq
     sos = butter(1, [low, high], btype='band', output='sos')
-    return (sos)
+    return sos
 
 
 def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float,
@@ -70,12 +72,12 @@ def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float,
     """
     Find a 1kHz 50ms beep at the beginning of a sound sample.
 
-    This functions is for processing delayed naming data
+    This function is for processing delayed naming data
     where the go-signal is a 1kHz 50ms beep. The algorithm assumes
     that the signal is the first properly detectable sound in
     the sample and also that it starts with a rising edge.
     The detection is based on locating the first negative
-    valued half wave (the second half wave) and working backwards
+    valued half-wave (the second half-wave) and working backwards
     from that using zero crossings and wave duration to pinpoint
     the onset.
 
@@ -164,7 +166,7 @@ def detect_beep_and_speech(frames: np.ndarray, sampling_frequency: float,
             int_signal[split_point:])/(len(int_signal)-split_point)
         has_speech = ave_energy_pre_beep < ave_energy_post_beep
     else:
-        # if the signal is very very short, there is no speech
+        # if the signal is very, very short, there is no speech
         has_speech = False
 
     return (beep, has_speech)
