@@ -51,6 +51,10 @@ And a significantly more relaxed feel about the segmentation process in general.
 CAST *is* aware that data beyond simple audio exist and will include features in
 the future that take this into account.
 
+## Current version is 0.1.0
+
+See [Changelog](docs/Changelog.md) for what is new.
+
 ## Roadmap to 1.0
 
 CAST is going to be re-organised a bit in the very near future (during autumn of
@@ -101,8 +105,10 @@ Linux and not at all on any other systems.
 
 ## Files and directories
 
-- source/cast/ is the directory that contains most of the processing logic.
-- `cast` or `computer-assisted-segmentation-tools` is the commandline interface for CAST.
+- [source/computer_assisted_segmentation_tools](source/computer_assisted_segmentation_tools)
+  is the directory that contains the processing logic.
+- `cast` or `computer-assisted-segmentation-tools` is the commandline interface
+  for CAST.
 - .gitignore tells git which directories and files to ignore.
 - local_files/ is not included in the distribution, but it is ignored by git. If
   you are working on CAST with git, this is the place to put your local test
