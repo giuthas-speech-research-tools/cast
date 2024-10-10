@@ -35,8 +35,9 @@ prompts:
   - water swallow
 
 # Recordings where the prompt contains one of these strings will be skipped.
-parts of prompts:
+parts_of_prompts:
   - biteplate
+  - bite plate
   - tap test
   - water swallow
 

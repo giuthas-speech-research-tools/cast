@@ -41,6 +41,7 @@ import numpy as np
 from textgrids import TextGrid, Interval, Tier
 
 from .configuration_classes import ExclusionList
+from .exclusion import apply_exclusion_list
 from .meta import (
     check_and_load_aaa_meta, check_and_load_csv_meta, check_and_load_rasl_meta
 )
@@ -97,7 +98,7 @@ def add_tiers(
             print(f"Unknown data source: {data_source}. Exiting.")
             sys.exit()
 
-        apply
+        apply_exclusion_list(table, exclusion_list)
 
         for item in table:
             textgrid_file = path / (item['filename'] + ".TextGrid")

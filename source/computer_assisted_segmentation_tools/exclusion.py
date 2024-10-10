@@ -70,6 +70,7 @@ def apply_exclusion_list(
     for recording in recordings:
         filename = recording['filename']
         if filename in exclusion_list.files:
+            ic('excluding due to name', filename)
             _logger.info('Excluding %s: File is in exclusion list.', filename)
             recording['excluded'] = True
 
@@ -82,6 +83,7 @@ def apply_exclusion_list(
                     for element in exclusion_list.parts_of_prompts
                     if element in prompt]
         if prompt in exclusion_list.prompts or partials:
+            ic('excluding due to prompt', filename)
             _logger.info(
                 'Excluding %s. Prompt: %s matches exclusion list.',
                 filename, prompt)
@@ -127,7 +129,7 @@ def read_exclusion_list_from_yaml(filepath: Path) -> ExclusionList:
             schema = Map({
                 Optional("files"): Seq(Str()),
                 Optional("prompts"): Seq(Str()),
-                Optional("parts_of_prompt"): Seq(Str())
+                Optional("parts_of_prompts"): Seq(Str())
             })
             try:
                 raw_exclusion_dict = load(yaml_file.read(), schema)
@@ -143,9 +145,12 @@ def read_exclusion_list_from_yaml(filepath: Path) -> ExclusionList:
             "Continuing regardless.")
         raw_exclusion_dict = {}
 
-    ic(raw_exclusion_dict)
+    exclusion_dict = raw_exclusion_dict.data
 
-    return ExclusionList(files=raw_exclusion_dict)
+    return ExclusionList(
+        files=exclusion_dict['files'],
+        prompts=exclusion_dict['prompts'],
+        parts_of_prompts=exclusion_dict['parts_of_prompts'])
 
 
 def read_file_exclusion_list_from_csv(filepath: Path) -> ExclusionList:
