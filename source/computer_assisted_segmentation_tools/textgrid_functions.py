@@ -31,7 +31,9 @@
 """
 Functions for generating and modifying TextGrid objects.
 """
+import logging
 import pprint
+import shutil
 import sys
 from pathlib import Path
 
@@ -46,6 +48,8 @@ from .meta import (
     check_and_load_aaa_meta, check_and_load_csv_meta, check_and_load_rasl_meta
 )
 from .wav_handling import add_begin_end_from_wav
+
+_logger = logging.getLogger('cast.textgrid_functions')
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -101,17 +105,33 @@ def add_tiers(
         apply_exclusion_list(table, exclusion_list)
 
         for item in table:
-            textgrid_file = path / (item['filename'] + ".TextGrid")
-            ic(textgrid_file)
-            if textgrid_file.is_file():
-                textgrid = TextGrid(textgrid_file)
+            item['textgrid_path'] = path / (item['filename'] + ".TextGrid")
+
+        existing_textgrids = [item['textgrid_path'].is_file() for item in table ]
+        if any(existing_textgrids):
+            old_dir = table[0]['textgrid_path'].parent
+            new_dir = old_dir.with_name('cast_autosave')
+            new_dir.mkdir(exist_ok=True)
+            print(f"copying to {new_dir}")
+            for item in table:
+                shutil.copy2(item['textgrid_path'], new_dir)
+
+        for item in table:
+            if item['excluded']:
+                _logger.info(
+                    "File %s excluded, skipping ", item['filename'])
+                continue
+
+            add_begin_end_from_wav(item)
+
+            if item['textgrid_path'].is_file():
+                textgrid = TextGrid(item['textgrid_path'])
             else:
                 textgrid = TextGrid()
-                add_begin_end_from_wav(item)
-                ic(item)
+
             add_tiers_to_textgrid(
                 textgrid, item, config_dict, pronunciation_dict)
-            textgrid.write(textgrid_file)
+            textgrid.write(item['textgrid_path'])
 
 
 def add_tiers_to_textgrid(
