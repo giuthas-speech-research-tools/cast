@@ -2,6 +2,7 @@
 .vscode/
 .idea/
 .pixi/
+*.egg-info
 
 # local files
 local_data
