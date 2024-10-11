@@ -41,10 +41,16 @@ import csv
 import sys
 from contextlib import closing
 from pathlib import Path
-from typing import Union
 
 from strictyaml import (
-    Bool, Float, Map, Optional, ScalarValidator, Str, YAMLError, load)
+    Bool, Float, Map, Optional, ScalarValidator, Str, YAMLError, load
+)
+
+from .pydantic_extensions import UpdatableBaseModel
+
+
+class Configuration(UpdatableBaseModel):
+    pass
 
 
 class PathValidator(ScalarValidator):
@@ -62,7 +68,7 @@ class PathValidator(ScalarValidator):
         return None
 
 
-def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
+def read_config_file(filepath: Path | str | None = None) -> dict:
     """
     Read the config file from filepath.
 
@@ -122,13 +128,13 @@ def read_config_file(filepath: Union[Path, str, None] = None) -> dict:
     if "pronunciation_dictionary" in data and data["pronunciation_dictionary"]:
         if "[data_directory]" in data["pronunciation_dictionary"]:
             data["pronunciation_dictionary"].replace(
-                "[data_directory]", data["data_directory"]+"/")
+                "[data_directory]", data["data_directory"] + "/")
     data["pronunciation_dictionary"] = Path(data["pronunciation_dictionary"])
 
     if "exclusion_list" in data and data["exclusion_list"]:
         if "[data_directory]" in data["exclusion_list"]:
             data["exclusion_list"].replace(
-                "[data_directory]", data["data_directory"]+"/")
+                "[data_directory]", data["data_directory"] + "/")
     data["exclusion_list"] = Path(data["exclusion_list"])
 
     return config_dict.data
@@ -147,12 +153,12 @@ def read_exclusion_list(filepath: Path) -> dict:
             exclusion_dict = yaml.data
     else:
         exclusion_dict = {}
-        print(
-            f"Did not find the exclusion list at {filepath}. Proceeding anyhow.")
+        print(f"Did not find the exclusion list at {filepath}.")
+        print("Proceeding anyhow.")
     return exclusion_dict
 
 
-def read_pronunciation_dict(filepath: Union[Path, str]) -> dict:
+def read_pronunciation_dict(filepath: Path | str) -> dict:
     """
     Read the pronunciation dictionary and return it as a dict.
 
