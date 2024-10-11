@@ -4,7 +4,7 @@ version = "0.2.0"
 description = "CAST - Computer Assisted Segmentation Tools"
 authors = ["Pertti Palo <giuthas@gmail.com>"]
 channels = ["conda-forge"]
-platforms = ["linux-64"]
+platforms = ["linux-64", "win-64", "osx-64", "osx-arm64"]
 
 [tasks]
 
@@ -18,8 +18,8 @@ scipy = ">=1.14.1,<2"
 matplotlib = ">=3.9.2,<4"
 
 [pypi-dependencies]
-praat-textgrids = { path = "../textgrids", editable = true }
 computer-assisted-segmentation-tools = { path = ".", editable = true }
+praat-textgrids = ">=1.4.0, <2"
 
 [feature.devel.dependencies]
 pylint = ">=2.7.2,<3.3"
