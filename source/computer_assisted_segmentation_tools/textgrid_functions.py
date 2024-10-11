@@ -64,6 +64,23 @@ def generate_textgrid(
     pass
 
 
+def create_autosave_directory(textgrid_path: Path, config_dict: dict) -> Path:
+    config_dict
+
+    old_dir = textgrid_path.parent
+    new_dir = old_dir.with_name('cast_autosave')
+    if not new_dir.exists():
+        new_dir.mkdir()
+    else:
+        _logger.critical(
+            "Autosave directory: %s already exists.",
+            str(new_dir))
+        _logger.critical("I don't know how to solve that.")
+        sys.exit()
+
+    return new_dir
+
+
 def add_tiers(
         path, config_dict: dict,
         pronunciation_dict: dict | None = None,
@@ -107,11 +124,11 @@ def add_tiers(
         for item in table:
             item['textgrid_path'] = path / (item['filename'] + ".TextGrid")
 
-        existing_textgrids = [item['textgrid_path'].is_file() for item in table ]
+        existing_textgrids = [item['textgrid_path'].is_file() for item in table]
         if any(existing_textgrids):
-            old_dir = table[0]['textgrid_path'].parent
-            new_dir = old_dir.with_name('cast_autosave')
-            new_dir.mkdir(exist_ok=True)
+            new_dir = create_autosave_directory(
+                table[0]['textgrid_path'], config_dict)
+
             print(f"copying to {new_dir}")
             for item in table:
                 shutil.copy2(item['textgrid_path'], new_dir)
