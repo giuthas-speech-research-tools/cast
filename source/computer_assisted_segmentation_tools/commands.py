@@ -73,6 +73,27 @@ class CommandStrings(ExtendedEnum):
     REMOVE_DOUBLE_WORD_BOUNDARIES = 'remove-double-word-boundaries'
 
 
+class TierLevels(ExtendedEnum):
+    FILE = 'file'
+    UTTERANCE = 'utterance'
+    WORD = 'word'
+    PHONEME = 'phoneme'
+    PHONE = 'phone'
+
+    @classmethod
+    def get_level(cls, tier_name: str) -> int:
+        """
+        Class method which returns a list of the Enum's values.
+
+        Returns
+        -------
+        list
+            A list of the Enum's values.
+        """
+        tier_list = cls.values()
+        return tier_list.index(tier_name)
+
+
 def process_command(
         command: CommandStrings, path: Path, config_dict: dict,
         exclusion_list: ExclusionList | None = None
