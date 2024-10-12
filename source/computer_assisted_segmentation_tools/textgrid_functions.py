@@ -66,7 +66,7 @@ def generate_textgrid(
 
 
 def create_autosave_directory(textgrid_path: Path, config_dict: dict) -> Path:
-    config_dict
+    ic(config_dict)
 
     old_dir = textgrid_path.parent
     new_dir = old_dir.with_name('cast_autosave')
