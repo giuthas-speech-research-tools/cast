@@ -34,7 +34,7 @@
 
 from .command_line import CastArgumentParser
 from .commands import CommandStrings, process_command
-from .configuration import read_config_file
+from .configuration_parser import read_config_file
 from .exclusion import load_exclusion_list
 
 

@@ -43,35 +43,11 @@ from contextlib import closing
 from pathlib import Path
 
 from strictyaml import (
-    Bool, Float, Map, Optional, ScalarValidator, Str, YAMLError, load
+    Bool, Float, Map, Optional, ScalarValidator, Str, YAML, YAMLError, load
 )
 
 from .meta.cast_meta import Datasource
 from .pydantic_extensions import UpdatableBaseModel
-
-
-class ConfigurationFlags(UpdatableBaseModel):
-    detect_beep: bool | None = None
-    test: bool | None = None
-
-
-class TierParams(UpdatableBaseModel):
-    label: str | None = None
-
-
-class UtteranceGuess(UpdatableBaseModel):
-    begin: float
-    end: float
-
-
-class Configuration(UpdatableBaseModel):
-    datasource: Datasource
-    speaker_id: str
-    flags: ConfigurationFlags
-    tiers: dict[str, TierParams]
-    exclusion_list: Path | None = None
-    pronunciation_dictionary: Path | None = None
-    utterance_guess: UtteranceGuess
 
 
 class PathValidator(ScalarValidator):
@@ -94,7 +70,7 @@ _tier_schema = Map({
 })
 
 
-def read_config_file(filepath: Path | str | None = None) -> dict:
+def read_config_file(filepath: Path | str | None = None) -> YAML:
     """
     Read the config file from filepath.
 
@@ -142,20 +118,20 @@ def read_config_file(filepath: Path | str | None = None) -> dict:
         print(f"Didn't find {filepath}. Exiting.")
         sys.exit()
 
-    data = config_dict.data
-    if "pronunciation_dictionary" in data and data["pronunciation_dictionary"]:
-        if "[data_directory]" in data["pronunciation_dictionary"]:
-            data["pronunciation_dictionary"].replace(
-                "[data_directory]", data["data_directory"] + "/")
-    data["pronunciation_dictionary"] = Path(data["pronunciation_dictionary"])
+    # data = config_dict.data
+    # if "pronunciation_dictionary" in data and data["pronunciation_dictionary"]:
+    #     if "[data_directory]" in data["pronunciation_dictionary"]:
+    #         data["pronunciation_dictionary"].replace(
+    #             "[data_directory]", data["data_directory"] + "/")
+    # data["pronunciation_dictionary"] = Path(data["pronunciation_dictionary"])
+    #
+    # if "exclusion_list" in data and data["exclusion_list"]:
+    #     if "[data_directory]" in data["exclusion_list"]:
+    #         data["exclusion_list"].replace(
+    #             "[data_directory]", data["data_directory"] + "/")
+    # data["exclusion_list"] = Path(data["exclusion_list"])
 
-    if "exclusion_list" in data and data["exclusion_list"]:
-        if "[data_directory]" in data["exclusion_list"]:
-            data["exclusion_list"].replace(
-                "[data_directory]", data["data_directory"] + "/")
-    data["exclusion_list"] = Path(data["exclusion_list"])
-
-    return config_dict.data
+    return config_dict
 
 
 def read_exclusion_list(filepath: Path) -> dict:

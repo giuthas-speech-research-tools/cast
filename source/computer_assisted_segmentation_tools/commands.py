@@ -37,7 +37,7 @@ import sys
 
 from .clean_textgrids import remove_empty_intervals_from_textgrids
 from .concatenate import concatenate_wavs
-from .configuration import read_pronunciation_dict
+from .configuration_parser import read_pronunciation_dict
 from .configuration_classes import ExclusionList
 from .extract import extract_textgrids
 from .path_functions import initialise_dataset

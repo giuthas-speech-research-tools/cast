@@ -33,6 +33,34 @@ Classes for storing CAST configuration.
 """
 
 from dataclasses import dataclass
+from pathlib import Path
+
+from .meta.cast_meta import Datasource
+from .pydantic_extensions import UpdatableBaseModel
+
+
+class ConfigurationFlags(UpdatableBaseModel):
+    detect_beep: bool | None = None
+    test: bool | None = None
+
+
+class TierParams(UpdatableBaseModel):
+    label: str | None = None
+
+
+class UtteranceGuess(UpdatableBaseModel):
+    begin: float
+    end: float
+
+
+class MainConfig(UpdatableBaseModel):
+    datasource: Datasource
+    speaker_id: str
+    flags: ConfigurationFlags
+    tiers: dict[str, TierParams]
+    exclusion_list: Path | None = None
+    pronunciation_dictionary: Path | None = None
+    utterance_guess: UtteranceGuess
 
 
 @dataclass

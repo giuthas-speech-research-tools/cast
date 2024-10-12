@@ -36,8 +36,7 @@ from .audio_processing import high_pass, high_pass_50, detect_beep_and_speech
 from .clean_textgrids import remove_empty_intervals_from_textgrids
 from .cli import run_cli
 from .concatenate import concatenate_wavs
-from .configuration import (read_config_file, read_exclusion_list,
-                            read_pronunciation_dict)
+from .configuration import import CastConfig
 from .csv_output import write_results
 from .extract import extract_textgrids
 from .meta.aaa_meta import check_and_load_aaa_meta
