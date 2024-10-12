@@ -1,183 +1,122 @@
-#
-# Copyright (c) 2022-2024 Pertti Palo.
-#
-# This file is part of Computer Assisted Segmentation Tools 
-# (see https://github.com/giuthas-speech-research-tools/cast/).
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-# The example data packaged with this program is licensed under the
-# Creative Commons Attribution-NonCommercial-ShareAlike 4.0
-# International (CC BY-NC-SA 4.0) License. You should have received a
-# copy of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0
-# International (CC BY-NC-SA 4.0) License along with the data. If not,
-# see <https://creativecommons.org/licenses/by-nc-sa/4.0/> for details.
-#
-# When using the toolkit for scientific publications, please cite the
-# articles listed in README.markdown. They can also be found in
-# citations.bib in BibTeX format.
-#
-"""
-Load configuration files.
+"""Main configuration for SATKIT."""
 
-File types handled by this module are strict yaml config files, different types
-of exclusion lists, and pronunciation dictionaries.
-
-A possible future addition is handling also the saving of strict yaml config
-files.
-"""
-import csv
-import sys
-from contextlib import closing
+import logging
 from pathlib import Path
 
-from strictyaml import (
-    Bool, Float, Map, Optional, ScalarValidator, Str, YAMLError, load
+# from icecream import ic
+
+from .configuration_parser import (
+    load_main_config, load_gui_params, load_publish_params,
+    load_run_params  # , load_plot_params
+)
+from .configuration_classes import (
+    GuiConfig, MainConfig, DataRunConfig, PublishConfig
 )
 
-from .pydantic_extensions import UpdatableBaseModel
+_logger = logging.getLogger('satkit.configuration_setup')
 
 
-class Configuration(UpdatableBaseModel):
-    pass
-
-
-class PathValidator(ScalarValidator):
+class Configuration():
     """
-    Validate yaml representing a Path.
-
-    Please note that empty fields are interpreted as not available and
-    represented by None. If you want to specify current working directory, use
-    '.'
+    Main configuration class of SATKIT.
     """
 
-    def validate_scalar(self, chunk):
-        if chunk.contents:
-            return Path(chunk.contents)
-        return None
+    # TODO
+    # - reload
 
+    # TODO: implement an update method as well
+    # as save functionality.
 
-def read_config_file(filepath: Path | str | None = None) -> dict:
-    """
-    Read the config file from filepath.
+    # TODO: __repr__
 
-    If filepath is None, read from the default file 'cast_config.yml'.
-    In both cases if the file does not exist, report this and exit.
-    """
-    if filepath is None:
-        filepath = Path('cast_config.yml')
-    elif isinstance(filepath, str):
-        filepath = Path(filepath)
+    def __init__(
+            self,
+            configuration_file: Path | str | None = None
+    ) -> None:
+        """
+        Init the main configuration object.
 
-    if filepath.is_file():
-        with closing(open(filepath, 'r', encoding="utf-8")) as yaml_file:
-            schema = Map({
-                "data_source": Str(),
-                "speaker_id": Str(),
-                "data_directory": PathValidator(),
-                Optional("outputfile", default=None): PathValidator(),
-                Optional("output_dirname"): PathValidator(),
-                "flags": Map({
-                    "detect_beep": Bool(),
-                    "only_words": Bool(),
-                    "test": Bool(),
-                }),
-                "tiers": Map({
-                    Optional("file", default=False): Bool(),
-                    Optional("utterance", default=True): Bool(),
-                    Optional("word", default=True): Bool(),
-                    Optional("phoneme", default=True): Bool(),
-                    Optional("phone", default=True): Bool()
-                }),
-                "tier_names": Map({
-                    Optional("file", default=None): Str(),
-                    Optional("utterance", default=None): Str(),
-                    Optional("word", default=None): Str(),
-                    Optional("phoneme", default=None): Str(),
-                    Optional("phone", default=None): Str()
-                }),
-                Optional("exclusion_list", default=None): Str(),
-                Optional("pronunciation_dictionary", default=None): Str(),
-                Optional("word_guess"): Map({
-                    "begin": Float(),
-                    "end": Float()
-                })
-            })
-            try:
-                config_dict = load(yaml_file.read(), schema)
-            except YAMLError as error:
-                print(f"Fatal error in reading {filepath}:")
-                print(error)
-                sys.exit()
-    else:
-        print(f"Didn't find {filepath}. Exiting.".format(str(filepath)))
-        sys.exit()
+        Run only once. Updates should be done with methods of the class.
 
-    data = config_dict.data
-    if "pronunciation_dictionary" in data and data["pronunciation_dictionary"]:
-        if "[data_directory]" in data["pronunciation_dictionary"]:
-            data["pronunciation_dictionary"].replace(
-                "[data_directory]", data["data_directory"] + "/")
-    data["pronunciation_dictionary"] = Path(data["pronunciation_dictionary"])
+        Parameters
+        -------
+        configuration_file : Union[Path, str, None]
+            Path to the main configuration file.
+        """
 
-    if "exclusion_list" in data and data["exclusion_list"]:
-        if "[data_directory]" in data["exclusion_list"]:
-            data["exclusion_list"].replace(
-                "[data_directory]", data["data_directory"] + "/")
-    data["exclusion_list"] = Path(data["exclusion_list"])
+        self._main_config_yaml = load_main_config(configuration_file)
+        self._main_config = MainConfig(**self._main_config_yaml.data)
 
-    return config_dict.data
+        self._data_run_yaml = load_run_params(
+            self._main_config.data_run_parameter_file)
+        self._data_run_config = DataRunConfig(**self._data_run_yaml.data)
 
+        self._gui_yaml = load_gui_params(self._main_config.gui_parameter_file)
+        self._gui_config = GuiConfig(**self._gui_yaml.data)
 
-def read_exclusion_list(filepath: Path) -> dict:
-    """
-    Read the exclusion list from filepath.
+        # self._plot_yaml = load_plot_params(config['plotting_parameter_file'])
+        # self._plot_config = PlotConfig(**self._plot_yaml.data)
 
-    If no exclusion list file is present, return an empty array
-    after warning the user.
-    """
-    if filepath.is_file():
-        with closing(open(filepath, 'r', encoding="utf-8")) as yaml_file:
-            yaml = load(yaml_file.read())
-            exclusion_dict = yaml.data
-    else:
-        exclusion_dict = {}
-        print(f"Did not find the exclusion list at {filepath}.")
-        print("Proceeding anyhow.")
-    return exclusion_dict
+        self._publish_yaml = load_publish_params(
+            self._main_config.publish_parameter_file)
+        # ic(self._publish_yaml.data)
+        self._publish_config = PublishConfig(**self._publish_yaml.data)
 
+    @property
+    def main_config(self) -> MainConfig:
+        """Main config options."""
+        return self._main_config
 
-def read_pronunciation_dict(filepath: Path | str) -> dict:
-    """
-    Read the pronunciation dictionary and return it as a dict.
+    @property
+    def data_run_config(self) -> DataRunConfig:
+        """Config options for a data run."""
+        return self._data_run_config
 
-    The file is assumed to be in tab separated format and to 
-    contain one word on each line followed by the X-SAMPA transcription
-    of the expected pronunciation (phonological transcription).
+    @property
+    def gui_config(self) -> GuiConfig:
+        """Gui config options."""
+        return self._gui_config
 
-    Returns a dict where each entry is a list of phonemes.
-    """
-    if isinstance(filepath, str):
-        filepath = Path(filepath)
+    @property
+    def publish_config(self) -> PublishConfig:
+        """Result publishing configuration options."""
+        return self._publish_config
 
-    pronunciation_dict = {}
-    if filepath.is_file():
-        with closing(open(filepath, 'r', encoding="utf-8")) as csvfile:
-            reader = csv.reader(csvfile, delimiter=',')
-            pronunciation_dict = {row[0]: list(filter(None, row[1:]))
-                                  for row in reader}
-        return pronunciation_dict
-    else:
-        print(f"Didn't find {pronunciation_dict}. Exiting.")
-        sys.exit()
+    def update_from_file(
+            self, configuration_file: Path | str
+    ) -> None:
+        """
+        Update the configuration from a file.
+
+        Parameters
+        ----------
+        configuration_file : Union[Path, str]
+            File to read the new options from.
+
+        Raises
+        ------
+        NotImplementedError
+            This hasn't been implemented yet.
+        """
+        raise NotImplementedError(
+            "Updating configuration from a file has not yet been implemented.")
+        # main_config.update(**config_dict)
+
+    def save_to_file(
+            self, file: Path | str
+    ) -> None:
+        """
+        Save configuration to a file.
+
+        Parameters
+        ----------
+        file : Union[Path, str]
+            File to save to.
+
+        Raises
+        ------
+        NotImplementedError
+            This hasn't been implemented yet.
+        """
+        raise NotImplementedError(
+            "Saving configuration to a file has not yet been implemented.")

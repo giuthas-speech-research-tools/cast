@@ -43,7 +43,8 @@ tiers:
   - utterance:
   - word:
   - phoneme:
-  - phone: "phonetic detail"
+  - phone:
+    - label: "phonetic detail"
 
 # Strict YAML file specifying recordings to be excluded based
 # on both prompts and file names.
@@ -54,6 +55,6 @@ pronunciation_dictionary:
 # Start and end points of the guess where the word or speech might 
 # be in normalised time. If beep detection is used the normalised
 # period runs from end of beep to end of recording.
-word_guess:
+utterance_guess:
   begin: 0.0833
   end: 0.6667
