@@ -35,6 +35,7 @@ import logging
 import pprint
 import shutil
 import sys
+from copy import deepcopy
 from pathlib import Path
 
 from icecream import ic
@@ -151,6 +152,17 @@ def add_tiers(
             textgrid.write(item['textgrid_path'])
 
 
+def _calculate_seg_begin_end(
+        begin: float,
+        end: float,
+        coefficients: tuple[float, float]
+) -> tuple[float, float]:
+    earliest_speech = begin + .058
+    seg_begin = earliest_speech + (end - earliest_speech) * coefficients[0]
+    seg_end = earliest_speech + (end - earliest_speech) * coefficients[1]
+    return seg_begin, seg_end
+
+
 def add_tiers_to_textgrid(
         textgrid: TextGrid, params: dict, config_dict: dict,
         pronunciation_dict: dict = None
@@ -184,11 +196,10 @@ def add_tiers_to_textgrid(
             # Generate an evenly spaced first guess of segmentation by taking
             # the middle third of the potential speech interval and chopping it
             # up.
-            earliest_speech = params['begin'] + .058
-            seg_begin = earliest_speech + \
-                        (params['end'] - earliest_speech) * begin_coeff
-            seg_end = earliest_speech + \
-                      (params['end'] - earliest_speech) * end_coeff
+            (seg_begin, seg_end) = _calculate_seg_begin_end(
+                begin=params['begin'],
+                end=params['end'],
+                coefficients=(begin_coeff, end_coeff))
             boundaries = np.linspace(
                 seg_begin, seg_end, len(transcription) + 3)
             boundaries = boundaries[1:-1]
@@ -198,30 +209,54 @@ def add_tiers_to_textgrid(
                 f"Word \'{params['prompt']}\' missing from pronunciation dict.")
     else:
         print(f"Generating boundaries for {params['prompt']}.")
-        ic(params)
-        earliest_speech = params['begin'] + .058
-        seg_begin = earliest_speech + \
-                    (params['end'] - earliest_speech) * begin_coeff
-        seg_end = earliest_speech + \
-                  (params['end'] - earliest_speech) * end_coeff
+        (seg_begin, seg_end) = _calculate_seg_begin_end(
+            begin=params['begin'],
+            end=params['end'],
+            coefficients=(begin_coeff, end_coeff))
         boundaries = [seg_begin, seg_end]
         params['segment boundaries'] = boundaries
 
     if config_dict['tiers']['utterance']:
+        if config_dict['tier_names']['utterance'] in textgrid:
+            _logger.critical(
+                "Tier %s already exists. Skipping file %s.",
+                config_dict['tier_names']['utterance'],
+                textgrid.filename)
+            return
         utterance = generate_utterance_dicts(params)
         textgrid.interval_tier_from_array(
             config_dict['tier_names']['utterance'], utterance)
     if config_dict['tiers']['word']:
+        if config_dict['tier_names']['word'] in textgrid:
+            _logger.critical(
+                "Tier %s already exists. Skipping file %s.",
+                config_dict['tier_names']['utterance'],
+                textgrid.filename)
+            return
         words = generate_word_intervals(params)
         textgrid.interval_tier_from_array(
             config_dict['tier names']['word'], words)
     if config_dict['tiers']['phoneme']:
+        if config_dict['tier_names']['phoneme'] in textgrid:
+            _logger.critical(
+                "Tier %s already exists. Skipping file %s.",
+                config_dict['tier_names']['utterance'],
+                textgrid.filename)
+            return
         segments = generate_segments(params, pronunciation_dict)
         textgrid.interval_tier_from_array(
             config_dict['tier names']['phoneme'], segments)
     if config_dict['tiers']['phone']:
-        # TODO: check if phoneme tier already exists and if it does, just copy
-        # it
+        if config_dict['tier_names']['phone'] in textgrid:
+            _logger.critical(
+                "Tier %s already exists. Skipping file %s.",
+                config_dict['tier_names']['utterance'],
+                textgrid.filename)
+            return
+        elif config_dict['tier_names']['phoneme'] in textgrid:
+            phone_tier = deepcopy(
+                textgrid[config_dict['tier names']['phoneme']])
+            textgrid[config_dict['tier names']['phone']] = phone_tier
         textgrid.interval_tier_from_array(
             config_dict['tier names']['phone'], segments)
 
