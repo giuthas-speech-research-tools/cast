@@ -1402,7 +1402,7 @@ packages:
   name: computer-assisted-segmentation-tools
   version: 0.2.0
   path: .
-  sha256: 30d94d2e4cbc9872a72aaa857d391a46934936de9985f94c1c0d5e28d1c203db
+  sha256: 322339bb4c1b556ad437176c79d58454664d350c6f4c05ec3f72606ee5dac7be
   requires_python: '>=3.10,<3.13'
   editable: true
 - kind: conda
