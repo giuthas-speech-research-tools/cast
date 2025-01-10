@@ -1,5 +1,5 @@
 [project]
-name = "computer_assisted_segmentation_tools"
+name = "computer-assisted-segmentation-tools"
 version = "0.2.0"
 description = "CAST - Computer Assisted Segmentation Tools"
 authors = [
