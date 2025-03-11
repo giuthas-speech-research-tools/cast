@@ -32,7 +32,7 @@
 
 import click
 
-from . import cast_click
+from cast import cast_click
 # from .command_line import CastArgumentParser
 # from .commands import CommandStrings, process_command
 # from .configuration import CastConfig
