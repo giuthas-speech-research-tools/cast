@@ -58,19 +58,24 @@ def high_pass(sampling_frequency, stop_band) -> dict[str, np.ndarray]:
     return {'b': b, 'a': a}
 
 
-def band_pass(sampling_frequency):
+def band_pass(
+        sampling_frequency: float,
+        low: float = 950.0,
+        high: float = 1050.0,
+) -> tuple[np.ndarray, np.ndarray | float, np.ndarray]:
     """Generate a band pass filter for detecting a 1kHz signal."""
     _audio_logger.debug("Generating band-pass filter.")
     nyq = 0.5 * sampling_frequency
-    low = 950.0 / nyq
-    high = 1050.0 / nyq
+    low = low / nyq
+    high = high / nyq
     sos = butter(1, [low, high], btype='band', output='sos')
     return sos
 
 
 def detect_beep_and_speech(
         frames: np.ndarray, sampling_frequency: float,
-        b, a, name: str
+        b: np.ndarray, a: np.ndarray, name: str,
+        sos: tuple[np.ndarray, np.ndarray | float, np.ndarray] | None = None
 ) -> Tuple[float, bool]:
     """
     Find a 1kHz 50ms beep at the beginning of a sound sample.
@@ -96,7 +101,8 @@ def detect_beep_and_speech(
         "Detecting beep onset and presence of speech in %s.",
         name)
     hp_signal = filtfilt(b, a, frames)
-    sos = band_pass(sampling_frequency)
+    if sos is None:
+        sos = band_pass(sampling_frequency)
     bp_signal = sosfilt(sos, frames)
     bp_signal = sosfilt(sos, bp_signal[::-1])[::-1]
     signal_length = len(hp_signal)
@@ -148,6 +154,7 @@ def detect_beep_and_speech(
     roi_beg = bp_spike_indeces[0][0] - int(0.025 * sampling_frequency)
     roi_end = bp_spike_indeces[0][0] + int(0.025 * sampling_frequency)
 
+    print(roi_beg, roi_end)
     # Find the first properly rising edge in the 50 ms window.
     threshold = .1 * min(frames[0:roi_end])
     candidates = np.where(frames[roi_beg:roi_end] < threshold)[0]
