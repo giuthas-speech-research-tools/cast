@@ -32,8 +32,8 @@
 """
 Command line argument parser.
 """
+import sys
 from pathlib import Path
-from venv import logger
 
 import click
 from icecream import ic
@@ -208,7 +208,8 @@ def scramble():
     type=click.Path(exists=True, dir_okay=True, file_okay=True), )
 @click.argument("tier")
 @click.argument("new_names")
-def split_tier(original: Path, new: Path, tier: str, new_names: list[str]) -> None:
+def split_tier(
+        original: str, new: str, tier: str, new_names: str) -> None:
     """
     Split tier in TextGrid(s) into n tiers.
 
@@ -218,6 +219,10 @@ def split_tier(original: Path, new: Path, tier: str, new_names: list[str]) -> No
     NEW_NAMEs The names of the new Tiers. No spaces are allowed. Number of
         tiers is inferred from the length of the list.
     """
+    original = Path(original)
+    new = Path(new)
+    new_names = new_names.split(" ")
+
     files = []
     new_files = []
     if original.is_file():
@@ -225,20 +230,28 @@ def split_tier(original: Path, new: Path, tier: str, new_names: list[str]) -> No
             files = [original]
             new_files = [new]
         else:
-            logger.fatal(
+            # logger.fatal(
+            print(
                 f"Wrong file type passed. Expected .TextGrid or a"
                 f"directory, found {original.suffix}.")
+            sys.exit()
     else:
         if not new.is_dir():
-            logger.fatal(
+            # logger.fatal(
+            print(
                 f"If ORIGINAL is a directory, NEW should also be a directory. "
                 f"Instead got {new}, which is not a directory."
             )
-        files = original.glob("*.TextGrid")
+            sys.exit()
+        files = list(original.glob("*.TextGrid"))
         new_files = [new/file.name for file in files]
 
     for file, new_file in zip(files, new_files):
-        split_tier_to_n(original=file, new_file=new_file, tier=tier, new_names=new_names)
+        split_tier_to_n(
+            original=file,
+            new_file=new_file,
+            tier_name=tier,
+            new_names=new_names)
 
 
 @click.command()
@@ -258,6 +271,9 @@ def align_beeps(original: Path, new: Path, tier_name: str) -> None:
     NEW Either name or directory for the new TextGrid(s).
     TIER_NAME The name of the Tier containing the guesses for beep boundaries.
     """
+    original = Path(original)
+    new = Path(new)
+
     files = []
     new_files = []
     if original.is_file():
@@ -265,16 +281,20 @@ def align_beeps(original: Path, new: Path, tier_name: str) -> None:
             files = [original]
             new_files = [new]
         else:
-            logger.fatal(
+            # logger.fatal(
+            print(
                 f"Wrong file type passed. Expected .TextGrid or a"
                 f"directory, found {original.suffix}.")
+            sys.exit()
     else:
         if not new.is_dir():
-            logger.fatal(
+            # logger.fatal(
+            print(
                 f"If ORIGINAL is a directory, NEW should also be a directory. "
                 f"Instead got {new}, which is not a directory."
             )
-        files = original.glob("*.TextGrid")
+            sys.exit()
+        files = list(original.glob("*.TextGrid"))
         new_files = [new/file.name for file in files]
 
     for file, new_file in zip(files, new_files):

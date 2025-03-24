@@ -29,16 +29,25 @@
 # citations.bib in BibTeX format.
 #
 import pprint
+from copy import deepcopy
+import multiprocessing as mp
 from pathlib import Path
 
+import numpy as np
+import scipy.io.wavfile as sio_wavfile
 from textgrids import TextGrid, Tier
+from tqdm import tqdm
+
+from .audio_processing import band_pass, detect_beep_and_speech, high_pass
 
 pp = pprint.PrettyPrinter(indent=4)
 
+
 def delete_interval(
     tier: Tier,
-    index: int
-    ):
+    index: int,
+    shift_right: bool = True,
+) -> None:
     """
     Delete an Interval from a TextGrid Tier.
 
@@ -48,19 +57,27 @@ def delete_interval(
     Parameters
     ----------
     tier : Tier
-        The Tier containing the Inteval to be deleted.
+        The Tier containing the Interval to be deleted.
     index : int
         Index of the Interval to be deleted.
+    shift_right : bool
+        Which way to shift the remaining intervals when deleting this one.
     """
-    tier[index-1].xmax = tier[index].xmax
+    if shift_right:
+        if index-1 >= 0:
+            tier[index-1].xmax = tier[index].xmax
+    else:
+        if index+1 < len(tier):
+            tier[index+1].xmin = tier[index].xmin
     del tier[index]
+
 
 def remove_empty_intervals_from_grid(
         original_gridfile: Path,
         output_dir: Path
-    ):
+) -> None:
     """
-    Delete all empty Intervals (excpet first and last) in every Tier.
+    Delete all empty Intervals (expect first and last) in every Tier.
 
     Any empty segments apart from the first and last Interval of each Tier get
     deleted by extending the previous Interval to cover the deleted Interval's
@@ -77,14 +94,15 @@ def remove_empty_intervals_from_grid(
         Path to the output directory.
     """
     if not original_gridfile.exists():
-        print("Error: Original TextGrid file - " + str(original_gridfile) + " - does not exist.")
+        print("Error: Original TextGrid file - " +
+              str(original_gridfile) + " - does not exist.")
 
     if not output_dir.exists():
         output_dir.mkdir()
 
     grid = TextGrid(original_gridfile)
     for tier in grid:
-        deletion_list =  []
+        deletion_list = []
         for i, interval in enumerate(grid[tier][1:-1]):
             if not interval.text:
                 deletion_list.append(i+1)
@@ -95,12 +113,10 @@ def remove_empty_intervals_from_grid(
     grid.write(output_path)
 
 
-# TODO: change this into a generic filtering function which takes a list of
-# filters to apply to each texgrid. 
 def remove_empty_intervals_from_textgrids(
         original_dir: Path, 
         output_dir: Path,
-    ):
+) -> None:
     """
     Remove empty intervals from all TextGrids in the given directory.
 
@@ -120,3 +136,132 @@ def remove_empty_intervals_from_textgrids(
 
     for textgrid in original_dir.glob("*.TextGrid"):
         remove_empty_intervals_from_grid(textgrid, output_dir)
+
+
+def split_tier_to_n(
+        original: Path, new_file: Path, tier_name: str, new_names: list[str]
+) -> None:
+    """
+
+    Parameters
+    ----------
+    original : Path
+        Path to the original TextGrid.
+    new_file : Path
+        Path to the new TextGrid.
+    tier_name : str
+        Name of the Tier to split.
+    new_names : list[str]
+        Names of the new Tiers.
+    """
+    textgrid = TextGrid(original)
+    tier = textgrid.pop(tier_name)
+    for i, name in enumerate(new_names):
+        textgrid[name] = deepcopy(tier)
+        for j in range(len(textgrid[name])-2, -1, -1):
+            if (j + i + 1) % len(new_names) == 0:
+                delete_interval(textgrid[name], j, shift_right=False)
+
+    prev = ""
+    tier = textgrid[new_names[1]]
+    for i in range(len(tier)):
+        current = tier[i].text
+        tier[i].text = prev
+        prev = current
+    textgrid.write(filename=new_file)
+
+
+def align_beeps_in_textgrid(
+        original: Path, new_file: Path, tier_name: str) -> None:
+    """
+
+    Parameters
+    ----------
+    original : Path
+        Path to the original TextGrid.
+    new_file : Path
+        Path to the new TextGrid.
+    tier_name : str
+        Tier containing the beeps. This Tier should not contain any other
+        boundaries.
+    """
+    wav_name = original.with_suffix(".wav")
+    (sampling_frequency, frames) = sio_wavfile.read(wav_name)
+    time = np.linspace(
+        start=0,
+        stop=float(len(frames[:, 0])) / sampling_frequency,
+        num=len(frames[:, 0])
+    )
+
+    textgrid = TextGrid(original)
+    tier = textgrid[tier_name]
+
+    high_pass_filter = high_pass(sampling_frequency, 60)
+    band_pass_filter = band_pass(sampling_frequency)
+
+    new_boundaries = [
+        interval.xmax for interval in tier
+    ]
+
+    apply_args = [
+        (add_sil, args, filenames, m_I, m_name, model_names,
+        overwrite, quiet, use_ensemble, use_interp, word2phone)
+        for m_I, m_name in enumerate(model_names, start=1)
+    ]
+    with mp.Pool() as pool:
+        pool.starmap(apply_model, apply_args)
+
+    for i, interval in enumerate(tqdm(tier[1:])):
+        find_beep_in_slice(band_pass_filter, frames, high_pass_filter, i,
+                           interval, new_boundaries, sampling_frequency, tier,
+                           time, wav_name)
+
+    for i, interval in enumerate(tqdm(tier)):
+        if i == 0:
+            continue
+
+        if i == len(tier) - 1:
+            max_index = len(frames) - 1
+        else:
+            max_index = np.where(time > interval.xmax)[0][0]
+        min_index = np.where(time > interval.xmin)[0][0]
+        interval_frames = frames[min_index:max_index, 1]
+
+        beep_time, has_speech = detect_beep_and_speech(
+            frames=interval_frames,
+            sampling_frequency=sampling_frequency,
+            b=high_pass_filter['b'],
+            a=high_pass_filter['a'],
+            name=str(wav_name),
+            sos=band_pass_filter
+        )
+        new_boundaries[i] = interval.xmin + beep_time
+
+    for i, boundary in enumerate(new_boundaries):
+        if i == 0:
+            continue
+        tier[i].xmin = boundary
+        tier[i-1].xmax = boundary
+
+    textgrid.write(filename=new_file)
+
+
+def find_beep_in_slice(
+        band_pass_filter, frames, high_pass_filter, i, interval, new_boundaries,
+        sampling_frequency, tier, time, wav_name
+):
+    if i == len(tier) - 1:
+        max_index = len(frames) - 1
+    else:
+        max_index = np.where(time > interval.xmax)[0][0]
+    min_index = np.where(time > interval.xmin)[0][0]
+    interval_frames = frames[min_index:max_index, 1]
+    beep_time, has_speech = detect_beep_and_speech(
+        frames=interval_frames,
+        sampling_frequency=sampling_frequency,
+        b=high_pass_filter['b'],
+        a=high_pass_filter['a'],
+        name=str(wav_name),
+        sos=band_pass_filter
+    )
+    new_boundaries[i] = interval.xmin + beep_time

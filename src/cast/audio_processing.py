@@ -33,7 +33,6 @@ Audio processing functions.
 """
 
 import logging
-from typing import Tuple
 
 # Numpy and scipy
 import numpy as np
@@ -63,7 +62,25 @@ def band_pass(
         low: float = 950.0,
         high: float = 1050.0,
 ) -> tuple[np.ndarray, np.ndarray | float, np.ndarray]:
-    """Generate a band pass filter for detecting a 1kHz signal."""
+    """
+    Generate a Butterworth band pass filter for detecting sinusoidal signal.
+
+    By default, we are looking for a 1kHz signal.
+
+    Parameters
+    ----------
+    sampling_frequency : float
+        Sampling frequency of the sample.
+    low : float
+        Low stop frequency, by default 950.0.
+    high :
+        High stop frequency, by default 1050.0.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray | float, np.ndarray]
+        The `sos` format filter parameters.
+    """
     _audio_logger.debug("Generating band-pass filter.")
     nyq = 0.5 * sampling_frequency
     low = low / nyq
@@ -73,10 +90,12 @@ def band_pass(
 
 
 def detect_beep_and_speech(
-        frames: np.ndarray, sampling_frequency: float,
-        b: np.ndarray, a: np.ndarray, name: str,
+        frames: np.ndarray,
+        sampling_frequency: float,
+        b: np.ndarray, a: np.ndarray,
+        name: str,
         sos: tuple[np.ndarray, np.ndarray | float, np.ndarray] | None = None
-) -> Tuple[float, bool]:
+) -> tuple[float, bool]:
     """
     Find a 1kHz 50ms beep at the beginning of a sound sample.
 
@@ -94,9 +113,29 @@ def detect_beep_and_speech(
     sampling_frequency: the sampling frequency of the sound sample
     b and a: high pass filter parameters to remove the electrical
         mains' interference
-    name: name identifying the sample. Usually the filename.
-1    """
+    name:
 
+    Parameters
+    ----------
+    frames :  np.ndarray
+        The sample.
+    sampling_frequency : float
+        Sampling frequency of the sample.
+    b : np.ndarray
+        Mains filter parameters obtained from `high_pass`.
+    a : np.ndarray
+        Mains filter parameters obtained from `high_pass`.
+    name : str
+         Name identifying the sample. Usually the filename. Used in
+         logging/tracing.
+    sos :
+
+    Returns
+    -------
+    tuple[float, bool]
+        The estimate timestamp of when the beep begins and a heuristic guess
+        whether the sample contains speech.
+    """
     _audio_logger.debug(
         "Detecting beep onset and presence of speech in %s.",
         name)
@@ -154,7 +193,12 @@ def detect_beep_and_speech(
     roi_beg = bp_spike_indeces[0][0] - int(0.025 * sampling_frequency)
     roi_end = bp_spike_indeces[0][0] + int(0.025 * sampling_frequency)
 
-    print(roi_beg, roi_end)
+    # If it so happens that the first spike index is too close, move roi_beg to
+    # zero while preserving the length of the roi.
+    if roi_beg < 0:
+        roi_end -= roi_beg
+        roi_beg = 0
+
     # Find the first properly rising edge in the 50 ms window.
     threshold = .1 * min(frames[0:roi_end])
     candidates = np.where(frames[roi_beg:roi_end] < threshold)[0]
@@ -164,7 +208,7 @@ def detect_beep_and_speech(
     zero_crossings = np.where(
         np.diff(np.signbit(frames[beep_approx_index:roi_end])))[0]
     beep_index = beep_approx_index + \
-                 zero_crossings[0] + 1 - int(.001 * sampling_frequency)
+        zero_crossings[0] + 1 - int(.001 * sampling_frequency)
     beep = int_time[beep_index]
 
     # check if the energy before the beep begins is less
@@ -179,4 +223,4 @@ def detect_beep_and_speech(
         # if the signal is very, very short, there is no speech
         has_speech = False
 
-    return (beep, has_speech)
+    return beep, has_speech
