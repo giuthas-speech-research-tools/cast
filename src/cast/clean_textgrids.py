@@ -177,6 +177,11 @@ def split_tier_in_two(
 def align_beeps_in_textgrid(
         original: Path, new_file: Path, tier_name: str) -> None:
     """
+    Align rough beep boundaries accurately.
+
+    The algorithm looks only at the first second following the manual boundary.
+    The search will fail if the beep is before the manual boundary or if it more
+    than a second after the manual boundary.
 
     Parameters
     ----------
@@ -188,13 +193,8 @@ def align_beeps_in_textgrid(
         Tier containing the beeps. This Tier should not contain any other
         boundaries.
     """
-    wav_name = original.with_suffix(".wav")
+    wav_name = str(original.with_suffix(".wav"))
     (sampling_frequency, frames) = sio_wavfile.read(wav_name)
-    time = np.linspace(
-        start=0,
-        stop=float(len(frames[:, 0])) / sampling_frequency,
-        num=len(frames[:, 0])
-    )
 
     textgrid = TextGrid(original)
     tier = textgrid[tier_name]
@@ -207,50 +207,44 @@ def align_beeps_in_textgrid(
     ]
 
     apply_args = [
-        make_arguments(band_pass_filter, frames, high_pass_filter,
-                       i, interval, old_boundaries, sampling_frequency, tier,
-                       time, wav_name)
-        for i, interval in enumerate(tqdm(tier[1:]), start=1)
+        _make_beep_finding_arguments_constant_slice(
+            band_pass_filter, frames, high_pass_filter,
+            i, interval, old_boundaries, sampling_frequency,
+            wav_name)
+        for i, interval in enumerate(tier[:-1])
     ]
 
     new_boundaries = process_map(
-        find_beep_in_slice, apply_args, max_workers=7)
+        _find_beep_in_slice, apply_args, desc="Finding beeps")
 
-    print([float(item) for item in new_boundaries])
-    print(len(new_boundaries))
-
-    for i, boundary in enumerate(new_boundaries, start=1):
-        tier[i].xmin = boundary
-        tier[i-1].xmax = boundary
+    for i, boundary in enumerate(new_boundaries):
+        tier[i].xmax = boundary
+        tier[i+1].xmin = boundary
 
     textgrid.write(filename=new_file)
 
 
-def make_arguments(
+def _make_beep_finding_arguments_constant_slice(
         band_pass_filter, frames, high_pass_filter, i, interval,
-        old_boundaries, sampling_frequency, tier, time, wav_name
-):
-    if i == len(tier) - 1:
-        max_index = len(frames) - 1
-    else:
-        if (interval.xmax-interval.xmin) >= 3*sampling_frequency:
-            max_index = interval.xmin + 3*sampling_frequency
-        else:
-            max_index = np.where(time > interval.xmax)[0][0]
-    min_index = np.where(time > interval.xmin)[0][0]
-    interval_frames = frames[min_index:max_index, 1]
+        old_boundaries, sampling_frequency, wav_name
+) -> dict:
+    min_index = int(interval.xmax*sampling_frequency)
+    max_index = min_index + sampling_frequency
+    if max_index > len(frames):
+        max_index = len(frames)
+
     return {
             'band_pass_filter': band_pass_filter,
             'high_pass_filter': high_pass_filter,
             'index': i,
-            'interval_frames': interval_frames,
+            'interval_frames': frames[min_index:max_index, 1],
             'sampling_frequency': sampling_frequency,
-            'wav_name': str(wav_name),
+            'wav_name': wav_name,
             'old_boundary': old_boundaries[i],
         }
 
 
-def find_beep_in_slice(
+def _find_beep_in_slice(
         params: dict
 ) -> float:
     beep_time, has_speech = detect_beep_and_speech(
