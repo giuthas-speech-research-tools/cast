@@ -91,6 +91,11 @@ run_cli.add_command(cast_click.delete)
 # noinspection PyTypeChecker
 run_cli.add_command(cast_click.init)
 # noinspection PyTypeChecker
-run_cli.add_command(cast_click.remove_double_boundaries)
+run_cli.add_command(cast_click.remove_double_bounds)
 # noinspection PyTypeChecker
 run_cli.add_command(cast_click.scramble)
+
+# noinspection PyTypeChecker
+run_cli.add_command(cast_click.split_tier)
+# noinspection PyTypeChecker
+run_cli.add_command(cast_click.align_beeps)
