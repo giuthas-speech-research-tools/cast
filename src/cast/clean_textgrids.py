@@ -203,18 +203,18 @@ def align_beeps_in_textgrid(
         interval.xmax for interval in tier
     ]
 
-    apply_args = [
-        (add_sil, args, filenames, m_I, m_name, model_names,
-        overwrite, quiet, use_ensemble, use_interp, word2phone)
-        for m_I, m_name in enumerate(model_names, start=1)
-    ]
-    with mp.Pool() as pool:
-        pool.starmap(apply_model, apply_args)
-
-    for i, interval in enumerate(tqdm(tier[1:])):
-        find_beep_in_slice(band_pass_filter, frames, high_pass_filter, i,
-                           interval, new_boundaries, sampling_frequency, tier,
-                           time, wav_name)
+    # apply_args = [
+    #     (add_sil, args, filenames, m_I, m_name, model_names,
+    #     overwrite, quiet, use_ensemble, use_interp, word2phone)
+    #     for m_I, m_name in enumerate(model_names, start=1)
+    # ]
+    # with mp.Pool() as pool:
+    #     pool.starmap(apply_model, apply_args)
+    #
+    # for i, interval in enumerate(tqdm(tier[1:])):
+    #     find_beep_in_slice(band_pass_filter, frames, high_pass_filter, i,
+    #                        interval, new_boundaries, sampling_frequency, tier,
+    #                        time, wav_name)
 
     for i, interval in enumerate(tqdm(tier)):
         if i == 0:
