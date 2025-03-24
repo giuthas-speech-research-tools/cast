@@ -30,13 +30,13 @@
 #
 import pprint
 from copy import deepcopy
-import multiprocessing as mp
 from pathlib import Path
 
 import numpy as np
 import scipy.io.wavfile as sio_wavfile
 from textgrids import TextGrid, Tier
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 from .audio_processing import band_pass, detect_beep_and_speech, high_pass
 
@@ -138,10 +138,13 @@ def remove_empty_intervals_from_textgrids(
         remove_empty_intervals_from_grid(textgrid, output_dir)
 
 
-def split_tier_to_n(
+def split_tier_in_two(
         original: Path, new_file: Path, tier_name: str, new_names: list[str]
 ) -> None:
     """
+    Split a TextGrid Tier into two Tiers.
+
+    This is done by moving odd and even boundaries to separate Tiers.
 
     Parameters
     ----------
@@ -199,69 +202,65 @@ def align_beeps_in_textgrid(
     high_pass_filter = high_pass(sampling_frequency, 60)
     band_pass_filter = band_pass(sampling_frequency)
 
-    new_boundaries = [
+    old_boundaries = [
         interval.xmax for interval in tier
     ]
 
-    # apply_args = [
-    #     (add_sil, args, filenames, m_I, m_name, model_names,
-    #     overwrite, quiet, use_ensemble, use_interp, word2phone)
-    #     for m_I, m_name in enumerate(model_names, start=1)
-    # ]
-    # with mp.Pool() as pool:
-    #     pool.starmap(apply_model, apply_args)
-    #
-    # for i, interval in enumerate(tqdm(tier[1:])):
-    #     find_beep_in_slice(band_pass_filter, frames, high_pass_filter, i,
-    #                        interval, new_boundaries, sampling_frequency, tier,
-    #                        time, wav_name)
+    apply_args = [
+        make_arguments(band_pass_filter, frames, high_pass_filter,
+                       i, interval, old_boundaries, sampling_frequency, tier,
+                       time, wav_name)
+        for i, interval in enumerate(tqdm(tier[1:]), start=1)
+    ]
 
-    for i, interval in enumerate(tqdm(tier)):
-        if i == 0:
-            continue
+    new_boundaries = process_map(
+        find_beep_in_slice, apply_args, max_workers=7)
 
-        if i == len(tier) - 1:
-            max_index = len(frames) - 1
-        else:
-            max_index = np.where(time > interval.xmax)[0][0]
-        min_index = np.where(time > interval.xmin)[0][0]
-        interval_frames = frames[min_index:max_index, 1]
+    print([float(item) for item in new_boundaries])
+    print(len(new_boundaries))
 
-        beep_time, has_speech = detect_beep_and_speech(
-            frames=interval_frames,
-            sampling_frequency=sampling_frequency,
-            b=high_pass_filter['b'],
-            a=high_pass_filter['a'],
-            name=str(wav_name),
-            sos=band_pass_filter
-        )
-        new_boundaries[i] = interval.xmin + beep_time
-
-    for i, boundary in enumerate(new_boundaries):
-        if i == 0:
-            continue
+    for i, boundary in enumerate(new_boundaries, start=1):
         tier[i].xmin = boundary
         tier[i-1].xmax = boundary
 
     textgrid.write(filename=new_file)
 
 
-def find_beep_in_slice(
-        band_pass_filter, frames, high_pass_filter, i, interval, new_boundaries,
-        sampling_frequency, tier, time, wav_name
+def make_arguments(
+        band_pass_filter, frames, high_pass_filter, i, interval,
+        old_boundaries, sampling_frequency, tier, time, wav_name
 ):
     if i == len(tier) - 1:
         max_index = len(frames) - 1
     else:
-        max_index = np.where(time > interval.xmax)[0][0]
+        if (interval.xmax-interval.xmin) >= 3*sampling_frequency:
+            max_index = interval.xmin + 3*sampling_frequency
+        else:
+            max_index = np.where(time > interval.xmax)[0][0]
     min_index = np.where(time > interval.xmin)[0][0]
     interval_frames = frames[min_index:max_index, 1]
+    return {
+            'band_pass_filter': band_pass_filter,
+            'high_pass_filter': high_pass_filter,
+            'index': i,
+            'interval_frames': interval_frames,
+            'sampling_frequency': sampling_frequency,
+            'wav_name': str(wav_name),
+            'old_boundary': old_boundaries[i],
+        }
+
+
+def find_beep_in_slice(
+        params: dict
+) -> float:
     beep_time, has_speech = detect_beep_and_speech(
-        frames=interval_frames,
-        sampling_frequency=sampling_frequency,
-        b=high_pass_filter['b'],
-        a=high_pass_filter['a'],
-        name=str(wav_name),
-        sos=band_pass_filter
+        frames=params['interval_frames'],
+        sampling_frequency=params['sampling_frequency'],
+        b=params['high_pass_filter']['b'],
+        a=params['high_pass_filter']['a'],
+        name=params['wav_name'],
+        sos=params['band_pass_filter']
     )
-    new_boundaries[i] = interval.xmin + beep_time
+    return params['old_boundary'] + beep_time
+
+

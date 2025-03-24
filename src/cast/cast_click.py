@@ -41,7 +41,7 @@ from icecream import ic
 from .configuration import CastConfig
 from .clean_textgrids import (
     align_beeps_in_textgrid, remove_empty_intervals_from_textgrids,
-    split_tier_to_n
+    split_tier_in_two
 )
 from .concatenate import concatenate_wavs
 from .extract import extract_textgrids
@@ -211,17 +211,23 @@ def scramble():
 def split_tier(
         original: str, new: str, tier: str, new_names: str) -> None:
     """
-    Split tier in TextGrid(s) into n tiers.
+    Split tier in TextGrid(s) into two tiers.
 
     \b
     ORIGINAL Either a TextGrid or a directory containing TextGrids.
     NEW Either name or directory for the new TextGrid(s).
-    NEW_NAMEs The names of the new Tiers. No spaces are allowed. Number of
-        tiers is inferred from the length of the list.
+    NEW_NAMEs The names of the new Tiers. This should be exactly two names
+        separated by a space.
     """
     original = Path(original)
     new = Path(new)
     new_names = new_names.split(" ")
+    if len(new_names) != 2:
+        print(
+            f"There should be exactly two names for new tiers. Instead found "
+            f"{len(new_names)} in {' '.join(new_names)}."
+        )
+        sys.exit()
 
     files = []
     new_files = []
@@ -247,7 +253,7 @@ def split_tier(
         new_files = [new/file.name for file in files]
 
     for file, new_file in zip(files, new_files):
-        split_tier_to_n(
+        split_tier_in_two(
             original=file,
             new_file=new_file,
             tier_name=tier,
