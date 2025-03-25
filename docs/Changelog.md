@@ -101,6 +101,11 @@ features, the original features are now scheduled for the next release.
 - `split-tier` splits the named Tier in a TextGrid into two by moving every
   other boundary to one new Tier and every other to the other.
 
+### Fixed
+
+- Bugs in beep detection. 
+
+
 ## [0.1.0] 2024-10-08
 
 ### Added
