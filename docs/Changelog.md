@@ -53,7 +53,7 @@ In addition:
 ### Changed 
 
 - `add` currently writes the TextGrids in the original data directory. This
-  maybe changed in the future or become optional, but is pending on SATKIT being
+  maybe changed in the future or become optional, but is pending on PATKIT being
   able to properly edit TextGrids because Praat doesn't have a very easy time with
   TextGrids and wavs living in separate directories.
 
@@ -62,7 +62,10 @@ In addition:
 - Lots of old code, so please don't rely on the API staying very stable before
   version 1.0.
 
-## [0.2.0]
+## [next release]
+
+As the features in the published 0.2 got finished before the originally planned
+features, the original features are now scheduled for the next release.
 
 ### Highlights
 
@@ -84,6 +87,19 @@ In addition:
   configuration.
 - Similarly, Utterance, Word, Phoneme, and Phone are by default on.
 - Removed read_na_list which was used to read old style exclusion text files.
+
+## [0.2.0] 2025-03-25
+
+### Highlights
+
+- `align-beeps` and `split-tier` added.
+
+### Added
+
+- `align-beeps` automatically aligns manually or otherwise placed boundaries on
+  a named Tier to beeps.
+- `split-tier` splits the named Tier in a TextGrid into two by moving every
+  other boundary to one new Tier and every other to the other.
 
 ## [0.1.0] 2024-10-08
 
