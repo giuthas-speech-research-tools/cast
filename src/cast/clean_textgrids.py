@@ -200,7 +200,8 @@ def align_beeps_in_textgrid(
     tier = textgrid[tier_name]
 
     high_pass_filter = high_pass(sampling_frequency, 60)
-    band_pass_filter = band_pass(sampling_frequency)
+    band_pass_filter = band_pass(
+        sampling_frequency=sampling_frequency, low=980.0, high=1020.0)
 
     old_boundaries = [
         interval.xmax for interval in tier

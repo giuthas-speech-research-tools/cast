@@ -33,6 +33,7 @@ Audio processing functions.
 """
 
 import logging
+import sys
 
 # Numpy and scipy
 import numpy as np
@@ -52,8 +53,16 @@ def high_pass(sampling_frequency, stop_band) -> dict[str, np.ndarray]:
     """Returns a high-pass filter with a stop band of sb. Used for
     filtering the mains frequency away from recorded sound."""
     _audio_logger.debug("Generating high-pass filter.")
-    stop = (stop_band / (sampling_frequency / 2))
-    b, a = butter(10, stop, 'highpass')
+    # stop = (stop_band / (sampling_frequency / 2))
+    b, a = butter(
+        N=6, Wn=stop_band, btype='highpass',
+        fs=sampling_frequency)
+    if not np.all(np.abs(np.roots(a)) < 1):
+        _audio_logger.critical(
+            "The highpass filter for removing mains frequency "
+            "is not stable. Beep detection may still work, but might fail in "
+            "weird ways.")
+        sys.exit()
     return {'b': b, 'a': a}
 
 
@@ -165,30 +174,28 @@ def detect_beep_and_speech(
         wind_signal[:, i] = padded_signal[i:i + signal_length]
         bp_wind_signal[:, i] = padded_signal2[i:i + signal_length]
 
-    # kaiser windowed samples
+    # turn square windowed into kaiser windowed samples
     intensity_window = kaiser(window_length, 20)  # copied from praat
     # multiply each window slice with the window
-    wind_signal = np.dot(wind_signal, np.diag(intensity_window))
     bp_wind_signal = np.dot(bp_wind_signal, np.diag(intensity_window))
 
     # The signal is already squared, need to only take mean and root.
-    int_signal = 10 * np.log(np.sqrt(np.mean(wind_signal, 1)))
     bp_int_signal = 10 * np.log(np.sqrt(np.mean(bp_wind_signal, 1)))
 
     # Old int_time was used to almost correct the shift caused by windowing.
     # int_time = np.linspace(0, float(len(hp_signal) +
     # (window_length%2 - 1)/2.0)/fs, len(int_signal))
-    int_time = np.linspace(0, float(len(hp_signal)) /
-                           sampling_frequency, len(hp_signal))
-    int_signal[int_time < 1] = -80
+    int_time = np.linspace(
+        start=0,
+        stop=float(len(hp_signal)) / sampling_frequency,
+        num=len(hp_signal))
 
     # First form a rough estimate of where the beep is by detecting the first
     # big rise in the band passed signal.
     threshold_bp = .9 * max(bp_int_signal) + .1 * min(bp_int_signal)
     bp_spike_indeces = np.where(bp_int_signal > threshold_bp)
-    # bp_beep = int_time[bp_spike_indeces[0]]
 
-    # Search for the actual beep in the area from beginning of the recording to
+    # Search for the actual beep in the area between
     # 25 ms before and after where band passing thinks the beep begins.
     roi_beg = bp_spike_indeces[0][0] - int(0.025 * sampling_frequency)
     roi_end = bp_spike_indeces[0][0] + int(0.025 * sampling_frequency)
@@ -200,27 +207,28 @@ def detect_beep_and_speech(
         roi_beg = 0
 
     # Find the first properly rising edge in the 50 ms window.
-    threshold = .1 * min(frames[0:roi_end])
-    candidates = np.where(frames[roi_beg:roi_end] < threshold)[0]
+    threshold = .2 * min(hp_signal[0:roi_end])
+    candidates = np.where(hp_signal[roi_beg:roi_end] < threshold)[0]
     beep_approx_index = roi_beg + candidates[0]
     # beep_approx = int_time[beep_approx_index]
 
     zero_crossings = np.where(
-        np.diff(np.signbit(frames[beep_approx_index:roi_end])))[0]
+        np.diff(np.signbit(hp_signal[beep_approx_index:roi_end])))[0]
     beep_index = beep_approx_index + \
         zero_crossings[0] + 1 - int(.001 * sampling_frequency)
     beep = int_time[beep_index]
 
     # check if the energy before the beep begins is less
     # than the energy after the beep.
-    split_point = beep_index + int(.075 * sampling_frequency)
-    if len(hp_signal) > split_point:
-        ave_energy_pre_beep = np.sum(int_signal[:beep_index]) / beep_index
-        ave_energy_post_beep = np.sum(
-            int_signal[split_point:]) / (len(int_signal) - split_point)
-        has_speech = ave_energy_pre_beep < ave_energy_post_beep
-    else:
-        # if the signal is very, very short, there is no speech
-        has_speech = False
+    # split_point = beep_index + int(.075 * sampling_frequency)
+    # if len(hp_signal) > split_point:
+    #     ave_energy_pre_beep = np.sum(int_signal[:beep_index]) / beep_index
+    #     ave_energy_post_beep = np.sum(
+    #         int_signal[split_point:]) / (len(int_signal) - split_point)
+    #     has_speech = ave_energy_pre_beep < ave_energy_post_beep
+    # else:
+    #     # if the signal is very, very short, there is no speech
+    #     has_speech = False
+    has_speech = False
 
     return beep, has_speech
