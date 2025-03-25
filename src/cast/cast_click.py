@@ -205,7 +205,7 @@ def scramble():
     type=click.Path(exists=True, dir_okay=True, file_okay=True), )
 @click.argument(
     "new",
-    type=click.Path(exists=True, dir_okay=True, file_okay=True), )
+    type=click.Path(dir_okay=True, file_okay=True), )
 @click.argument("tier")
 @click.argument("new_names")
 def split_tier(
@@ -266,7 +266,7 @@ def split_tier(
     type=click.Path(exists=True, dir_okay=True, file_okay=True), )
 @click.argument(
     "new",
-    type=click.Path(exists=True, dir_okay=True, file_okay=True), )
+    type=click.Path(dir_okay=True, file_okay=True), )
 @click.argument("tier_name", required=False)
 def align_beeps(original: Path, new: Path, tier_name: str) -> None:
     """
