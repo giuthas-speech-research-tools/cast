@@ -139,7 +139,10 @@ def remove_empty_intervals_from_textgrids(
 
 
 def split_tier_in_two(
-        original: Path, new_file: Path, tier_name: str, new_names: list[str]
+        original: Path,
+        tier_name: str,
+        new_names: list[str],
+        new_file: Path | None = None
 ) -> None:
     """
     Split a TextGrid Tier into two Tiers.
@@ -150,13 +153,17 @@ def split_tier_in_two(
     ----------
     original : Path
         Path to the original TextGrid.
-    new_file : Path
-        Path to the new TextGrid.
     tier_name : str
         Name of the Tier to split.
     new_names : list[str]
         Names of the new Tiers.
+    new_file : Path | None
+        Path to the new TextGrid, by default None. If this is None, `_split` is
+        added to the name of the original file to generate the name of the new
+        file.
     """
+    if new_file is None:
+        new_file = original.with_suffix("_beeps.TextGrid")
     textgrid = TextGrid(original)
     tier = textgrid.pop(tier_name)
     for i, name in enumerate(new_names):
@@ -175,7 +182,11 @@ def split_tier_in_two(
 
 
 def align_beeps_in_textgrid(
-        original: Path, new_file: Path, tier_name: str) -> None:
+        original: Path,
+        tier_name: str,
+        new_file: Path | None = None,
+        wav_file: Path | None = None
+) -> None:
     """
     Align rough beep boundaries accurately.
 
@@ -187,13 +198,25 @@ def align_beeps_in_textgrid(
     ----------
     original : Path
         Path to the original TextGrid.
-    new_file : Path
-        Path to the new TextGrid.
     tier_name : str
         Tier containing the beeps. This Tier should not contain any other
         boundaries.
+    new_file : Path | None
+        Path to the new TextGrid, by default None. If this is None, `_beeps' is
+        added to the name of the original file to generate the name of the new
+        file.
+    wav_file : Path | None
+        Path to the wav file corresponding to the TextGrid, by default None. If
+        this is None, the name is formed by replacing `.TextGrid` in the
+        TextGrid's name with `.wav`.
     """
-    wav_name = str(original.with_suffix(".wav"))
+    if new_file is None:
+        new_name = original.stem + "_beeps.TextGrid"
+        new_file = original.with_name(new_name)
+    if wav_file is None:
+        wav_name = str(original.with_suffix(".wav"))
+    else:
+        wav_name = str(wav_file)
     (sampling_frequency, frames) = sio_wavfile.read(wav_name)
 
     textgrid = TextGrid(original)
@@ -230,7 +253,7 @@ def _make_beep_finding_arguments_constant_slice(
         old_boundaries, sampling_frequency, wav_name
 ) -> dict:
     min_index = int(interval.xmax*sampling_frequency)
-    max_index = min_index + sampling_frequency
+    max_index = min_index + 3*sampling_frequency
     if max_index > len(frames):
         max_index = len(frames)
 

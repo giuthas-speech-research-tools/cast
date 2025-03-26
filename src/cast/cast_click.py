@@ -203,24 +203,33 @@ def scramble():
 @click.argument(
     "original",
     type=click.Path(exists=True, dir_okay=True, file_okay=True), )
-@click.argument(
-    "new",
-    type=click.Path(dir_okay=True, file_okay=True), )
 @click.argument("tier")
-@click.argument("new_names")
+@click.argument("new-names")
+@click.option(
+    "-n", "--new-path",
+    type=click.Path(dir_okay=True, file_okay=True), )
 def split_tier(
-        original: str, new: str, tier: str, new_names: str) -> None:
+    original: str,
+    tier: str,
+    new_names: str,
+    new_path: str | None = None,
+) -> None:
     """
-    Split tier in TextGrid(s) into two tiers.
+    Split tier in TextGrid(s) into two Tiers.
 
     \b
     ORIGINAL Either a TextGrid or a directory containing TextGrids.
-    NEW Either name or directory for the new TextGrid(s).
+    TIER is the name of the Tier to split.
+    NEW-PATH Either name or directory for the new TextGrid(s).
     NEW_NAMEs The names of the new Tiers. This should be exactly two names
         separated by a space.
     """
     original = Path(original)
-    new = Path(new)
+    if new_path is None and original.is_dir():
+        new_name = original.name + '_split'
+        new_path = original.with_name(new_name)
+    elif new_path is not None:
+        new_path = Path(new_path)
     new_names = new_names.split(" ")
     if len(new_names) != 2:
         print(
@@ -234,7 +243,7 @@ def split_tier(
     if original.is_file():
         if original.suffix == '.TextGrid':
             files = [original]
-            new_files = [new]
+            new_files = [new_path]
         else:
             # logger.fatal(
             print(
@@ -242,15 +251,15 @@ def split_tier(
                 f"directory, found {original.suffix}.")
             sys.exit()
     else:
-        if not new.is_dir():
+        if not new_path.is_dir():
             # logger.fatal(
             print(
                 f"If ORIGINAL is a directory, NEW should also be a directory. "
-                f"Instead got {new}, which is not a directory."
+                f"Instead got {new_path}, which is not a directory."
             )
             sys.exit()
         files = list(original.glob("*.TextGrid"))
-        new_files = [new/file.name for file in files]
+        new_files = [new_path / file.name for file in files]
 
     for file, new_file in zip(files, new_files):
         split_tier_in_two(
@@ -264,28 +273,47 @@ def split_tier(
 @click.argument(
     "original",
     type=click.Path(exists=True, dir_okay=True, file_okay=True), )
-@click.argument(
-    "new",
+@click.option(
+    "-w", "--wav-file",
+    type=click.Path(dir_okay=False, file_okay=True), )
+@click.option(
+    "-n", "--new-path",
     type=click.Path(dir_okay=True, file_okay=True), )
-@click.argument("tier_name", required=False)
-def align_beeps(original: Path, new: Path, tier_name: str) -> None:
+@click.option("-t", "--tier-name", type=str)
+def align_beeps(
+        original: str,
+        wav_file: str | None = None,
+        new_path: str | None = None,
+        tier_name: str | None = 'beep'
+) -> None:
     """
     Align beep boundaries in TextGrid(s).
 
     \b
     ORIGINAL Either a TextGrid or a directory containing TextGrids.
-    NEW Either name or directory for the new TextGrid(s).
-    TIER_NAME The name of the Tier containing the guesses for beep boundaries.
+    NEW-PATH Either name or directory for the new TextGrid(s).
+    WAV-FILE Name of the wavfile to use. Only used when ORIGINAL is a file.
+    TIER-NAME The name of the Tier containing the guesses for beep boundaries.
+        Defaults to 'beep'.
     """
     original = Path(original)
-    new = Path(new)
+    if new_path is None and original.is_dir():
+        new_name = original.name + '_beeps'
+        new_path = original.with_name(new_name)
+    elif new_path is not None:
+        new_path = Path(new_path)
+
+    if wav_file is not None and original.is_file():
+        wav_file = Path(wav_file)
+    else:
+        wav_file = None
 
     files = []
     new_files = []
     if original.is_file():
         if original.suffix == '.TextGrid':
             files = [original]
-            new_files = [new]
+            new_files = [new_path]
         else:
             # logger.fatal(
             print(
@@ -293,16 +321,20 @@ def align_beeps(original: Path, new: Path, tier_name: str) -> None:
                 f"directory, found {original.suffix}.")
             sys.exit()
     else:
-        if not new.is_dir():
+        if not new_path.is_dir():
             # logger.fatal(
             print(
                 f"If ORIGINAL is a directory, NEW should also be a directory. "
-                f"Instead got {new}, which is not a directory."
+                f"Instead got {new_path}, which is not a directory."
             )
             sys.exit()
         files = list(original.glob("*.TextGrid"))
-        new_files = [new/file.name for file in files]
+        new_files = [new_path / file.name for file in files]
 
     for file, new_file in zip(files, new_files):
         align_beeps_in_textgrid(
-            original=file, new_file=new_file, tier_name=tier_name)
+            original=file,
+            new_file=new_file,
+            tier_name=tier_name,
+            wav_file=wav_file,
+        )
