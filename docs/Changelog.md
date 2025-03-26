@@ -88,7 +88,7 @@ features, the original features are now scheduled for the next release.
 - Similarly, Utterance, Word, Phoneme, and Phone are by default on.
 - Removed read_na_list which was used to read old style exclusion text files.
 
-## [0.2.0] 2025-03-25
+## [0.2.0] 2025-03-26
 
 ### Highlights
 
