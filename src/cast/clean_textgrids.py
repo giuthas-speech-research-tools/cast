@@ -163,7 +163,8 @@ def split_tier_in_two(
         file.
     """
     if new_file is None:
-        new_file = original.with_suffix("_beeps.TextGrid")
+        new_name = original.stem + "_split.TextGrid"
+        new_file = original.with_name(new_name)
     textgrid = TextGrid(original)
     tier = textgrid.pop(tier_name)
     for i, name in enumerate(new_names):
