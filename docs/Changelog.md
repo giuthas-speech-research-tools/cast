@@ -62,10 +62,7 @@ In addition:
 - Lots of old code, so please don't rely on the API staying very stable before
   version 1.0.
 
-## [next release]
-
-As the features in the published 0.2 got finished before the originally planned
-features, the original features are now scheduled for the next release.
+## [0.3.0] 2026-08-
 
 ### Highlights
 
@@ -87,6 +84,7 @@ features, the original features are now scheduled for the next release.
   configuration.
 - Similarly, Utterance, Word, Phoneme, and Phone are by default on.
 - Removed read_na_list which was used to read old style exclusion text files.
+
 
 ## [0.2.0] 2025-03-26
 
