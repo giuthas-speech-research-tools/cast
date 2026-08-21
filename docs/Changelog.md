@@ -66,11 +66,13 @@ In addition:
 
 ### Added
 
-- `init` creates 
+- `init` initialises the directory structure used by `tggen`. 
 - `add` applies exclusion list before processing files.
 - `add` moves existing textgrids to a safe directory before creating new tiers
   and writing the new textgrids in the original directory.
 - `add` now does incremental adding of Tiers.
+- Documentation for the directory structure and the commands in
+  docs/Directories.
 - A number of other commands are present in the command line interface too, but
   have not been implemented yet.
 
